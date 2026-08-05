@@ -1,0 +1,22 @@
+:root {
+  --bg: #f5f7fb;
+  --card: white;
+  --text: #222;
+  --border: #ddd;
+  --button: #0f766e;
+}
+
+.dark {
+  --bg: #111827;
+  --card: #1f2937;
+  --text: white;
+  --border: #374151;
+  --button: #14b8a6;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  transition: .3s;
+}

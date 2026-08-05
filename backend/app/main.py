@@ -9,37 +9,52 @@ from .routers import (
     sites_routes,
     predict,
     location_info,
+    weather,
 )
 
-# Create database tables
+# -----------------------------
+# Create Database Tables
+# -----------------------------
 Base.metadata.create_all(bind=engine)
 
-# Create FastAPI app
+# -----------------------------
+# Create FastAPI App
+# -----------------------------
 app = FastAPI(
-    title="Solar & Wind Deployment Intelligence Platform"
+    title="Solar & Wind Deployment Intelligence Platform",
+    version="1.0.0",
 )
 
+# -----------------------------
 # Enable CORS
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routers
+# -----------------------------
+# Register Routers
+# -----------------------------
 app.include_router(auth_routes.router)
 app.include_router(projects_routes.router)
 app.include_router(sites_routes.router)
 app.include_router(predict.router)
 app.include_router(location_info.router)
+app.include_router(weather.router)
 
+# -----------------------------
 # Health Check
+# -----------------------------
 @app.get("/")
 def health():
     return {
-        "message": "Solar & Wind Deployment Intelligence Platform API running"
+        "status": "success",
+        "message": "Solar & Wind Deployment Intelligence Platform API is running"
     }

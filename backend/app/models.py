@@ -3,6 +3,11 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from .database import Base
 
+
+# ==========================
+# USER
+# ==========================
+
 class User(Base):
     __tablename__ = "users"
 
@@ -15,6 +20,11 @@ class User(Base):
 
     projects = relationship("Project", back_populates="owner")
 
+
+# ==========================
+# PROJECT
+# ==========================
+
 class Project(Base):
     __tablename__ = "projects"
 
@@ -26,20 +36,40 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     owner = relationship("User", back_populates="projects")
-    sites = relationship("Site", back_populates="project", cascade="all, delete")
+    sites = relationship(
+        "Site",
+        back_populates="project",
+        cascade="all, delete"
+    )
+
+
+# ==========================
+# SITE
+# ==========================
 
 class Site(Base):
     __tablename__ = "sites"
 
     id = Column(Integer, primary_key=True, index=True)
+
     site_name = Column(String, nullable=False)
+
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
+
     land_area = Column(Float, nullable=True)
     elevation = Column(Float, nullable=True)
+
     infrastructure = Column(String, nullable=True)
     land_ownership = Column(String, nullable=True)
+
+    # AI Prediction Results
+    prediction = Column(String, nullable=True)
+    score = Column(Float, nullable=True)
+    rating = Column(String, nullable=True)
+
     project_id = Column(Integer, ForeignKey("projects.id"))
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     project = relationship("Project", back_populates="sites")

@@ -26,7 +26,7 @@ function ChangeView({ latitude, longitude }) {
 
   useEffect(() => {
     if (latitude && longitude) {
-      map.setView([Number(latitude), Number(longitude)], 15);
+      map.setView([Number(latitude), Number(longitude)], 17);
     }
   }, [latitude, longitude, map]);
 
@@ -34,23 +34,28 @@ function ChangeView({ latitude, longitude }) {
 }
 
 function MapEvents({
-  points,
   setPoints,
   setLatitude,
   setLongitude,
   getLocationDetails,
+  getWeatherDetails,
 }) {
   useMapEvents({
     click(e) {
       const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
+      const lon = e.latlng.lng;
 
       setLatitude(lat.toFixed(6));
-      setLongitude(lng.toFixed(6));
+      setLongitude(lon.toFixed(6));
 
-      getLocationDetails(lat.toFixed(6), lng.toFixed(6));
+      getLocationDetails(lat.toFixed(6), lon.toFixed(6));
+      getWeatherDetails(lat.toFixed(6), lon.toFixed(6));
 
-      setPoints((prev) => [...prev, [lng, lat]]);
+      setPoints((prev) => {
+        const updated = [...prev, [lon, lat]];
+        console.log("Polygon Points:", updated);
+        return updated;
+      });
     },
   });
 
@@ -63,21 +68,28 @@ export default function MapPicker({
   setLatitude,
   setLongitude,
   getLocationDetails,
+  getWeatherDetails,
   setLandArea,
 }) {
   const [points, setPoints] = useState([]);
 
   useEffect(() => {
     if (points.length >= 3) {
-      const polygon = turf.polygon([
-        [...points, points[0]],
-      ]);
+      try {
+        const polygon = turf.polygon([
+          [...points, points[0]],
+        ]);
 
-      const area = turf.area(polygon);
+        const areaSqMeters = turf.area(polygon);
+        const acres = areaSqMeters / 4046.85642;
 
-      const acres = area / 4046.86;
+        console.log("Area (sq.m):", areaSqMeters);
+        console.log("Area (acres):", acres);
 
-      setLandArea(acres.toFixed(2));
+        setLandArea(acres.toFixed(2));
+      } catch (err) {
+        console.log(err);
+      }
     }
   }, [points, setLandArea]);
 
@@ -85,11 +97,11 @@ export default function MapPicker({
     <>
       <MapContainer
         center={[13.3409, 77.101]}
-        zoom={10}
+        zoom={15}
         style={{
           height: "450px",
           width: "100%",
-          borderRadius: "15px",
+          borderRadius: "12px",
         }}
       >
         <TileLayer
@@ -103,22 +115,33 @@ export default function MapPicker({
         />
 
         <MapEvents
-          points={points}
           setPoints={setPoints}
           setLatitude={setLatitude}
           setLongitude={setLongitude}
           getLocationDetails={getLocationDetails}
+          getWeatherDetails={getWeatherDetails}
         />
 
         {latitude && longitude && (
           <Marker
-            position={[Number(latitude), Number(longitude)]}
+            position={[
+              Number(latitude),
+              Number(longitude),
+            ]}
           />
         )}
 
         {points.length >= 3 && (
           <Polygon
-            positions={points.map(([lng, lat]) => [lat, lng])}
+            positions={points.map(([lon, lat]) => [
+              lat,
+              lon,
+            ])}
+            pathOptions={{
+              color: "blue",
+              fillColor: "lightblue",
+              fillOpacity: 0.4,
+            }}
           />
         )}
       </MapContainer>

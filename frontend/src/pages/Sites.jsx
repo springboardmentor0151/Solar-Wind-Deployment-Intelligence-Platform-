@@ -1,11 +1,18 @@
+import AnalyticsCharts from "../components/AnalyticsCharts";
+import DashboardCard from "../components/DashboardCard";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import MapPicker from "../components/MapPicker";
 
 export default function Sites() {
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
 
   const [sites, setSites] = useState([]);
+  const [editingSiteId, setEditingSiteId] = useState(null);
+  const [editSiteName, setEditSiteName] = useState("");
 
   const [siteName, setSiteName] = useState("");
   const [latitude, setLatitude] = useState("");
@@ -21,10 +28,15 @@ export default function Sites() {
   const [country, setCountry] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
   const [prediction, setPrediction] = useState("");
+  const [score, setScore] = useState(0);
+  const [rating, setRating] = useState("");
   const [location, setLocation] = useState("");
   const [taluk, setTaluk] = useState("");
-
- const fetchSites = async () => {
+  const [solarRadiation, setSolarRadiation] = useState("");
+  const [windSpeed, setWindSpeed] = useState("");
+  const [temperature, setTemperature] = useState("");
+  const [rainfall, setRainfall] = useState("");
+  const fetchSites = async () => {
   try {
     const res = await axios.get(
       "http://127.0.0.1:8000/sites/",
@@ -52,20 +64,44 @@ export default function Sites() {
     );
 
     const data = response.data;
-    console.log("Location API Response:", data);
-
+    console.log(JSON.stringify(data, null, 2));
     setLocation(data.location || "");
-setTaluk(data.taluk || "");
-setDistrict(data.district || "");
-setStateName(data.state || "");
-setCountry(data.country || "");
+    setTaluk(data.taluk || "");
+    setDistrict(data.district || "");
+    setStateName(data.state || "");
+    setCountry(data.country || "");
     setElevation(data.elevation || "");
     setInfrastructure(data.infrastructure || "");
     setOwnership(data.ownership || "");
-
+    
   } catch (err) {
     console.log(err);
     alert("Unable to fetch location details");
+  }
+};
+
+// Fetch weather details automatically
+const getWeatherDetails = async (lat, lon) => {
+  try {
+    const response = await axios.get(
+      `http://127.0.0.1:8000/weather/?lat=${lat}&lon=${lon}`
+    );
+
+    const data = response.data;
+    console.log("Weather API Response:");
+    console.log(JSON.stringify(data, null, 2));
+    setTemperature(data.temperature || "");
+    setWindSpeed(data.wind_speed || "");
+    setRainfall(data.rainfall ?? "");
+    setSolarRadiation(data.solar_radiation);
+    console.log("Temperature:", data.temperature);
+    console.log("Wind:", data.wind_speed);
+    console.log("Rain:", data.rainfall);
+    console.log("Solar:", data.solar_radiation);
+
+  } catch (err) {
+    console.log(err);
+    alert("Unable to fetch weather details");
   }
 };
 const searchPlace = async () => {
@@ -93,8 +129,9 @@ const searchPlace = async () => {
     setLongitude(lon);
 
     await getLocationDetails(lat, lon);
+    await getWeatherDetails(lat, lon);
 
-    alert("Location Found Successfully!");
+alert("Location Found Successfully!");
   } catch (err) {
     console.log(err);
     alert("Unable to search location");
@@ -116,16 +153,22 @@ const predictSuitability = async () => {
 
   try {
     const res = await axios.post(
-      "http://127.0.0.1:8000/predict/",
-      {
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-        land_area: Number(landArea),
-        elevation: Number(elevation),
-      }
-    );
+  "http://127.0.0.1:8000/predict/",
+  {
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+    land_area: Number(landArea),
+    elevation: Number(elevation),
+    solar_radiation: Number(solarRadiation),
+    wind_speed: Number(windSpeed),
+    temperature: Number(temperature),
+    rainfall: Number(rainfall),
+  }
+);
 
     setPrediction(res.data.prediction);
+    setScore(res.data.score);
+    setRating(res.data.rating);
   } catch (err) {
     console.log(err);
     alert("Prediction failed");
@@ -150,15 +193,18 @@ const createSite = async () => {
       await axios.post(
         "http://127.0.0.1:8000/sites/",
         {
-          site_name: siteName,
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-          land_area: Number(landArea),
-          elevation: Number(elevation),
-          infrastructure,
-          land_ownership: ownership,
-          project_id: Number(projectId),
-        },
+  site_name: siteName,
+  latitude: Number(latitude),
+  longitude: Number(longitude),
+  land_area: Number(landArea),
+  elevation: Number(elevation),
+  infrastructure,
+  land_ownership: ownership,
+  prediction,
+  score,
+  rating,
+  project_id: Number(projectId),
+},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -177,10 +223,10 @@ const createSite = async () => {
       setOwnership("");
 
       setLocation("");
-setTaluk("");
-setDistrict("");
-setStateName("");
-setCountry("");
+      setTaluk("");
+      setDistrict("");
+      setStateName("");
+      setCountry("");
 
       fetchSites();
     } catch (err) {
@@ -188,12 +234,144 @@ setCountry("");
       alert("Failed to create site");
     }
   };
+  const deleteSite = async (siteId) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this site?"
+  );
 
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await axios.delete(
+      `http://127.0.0.1:8000/sites/${siteId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Site deleted successfully!");
+
+    // Refresh the site list
+    fetchSites();
+
+  } catch (err) {
+    console.log(err);
+    alert("Failed to delete site.");
+  }
+};
+
+const editSite = (site) => {
+  setEditingSiteId(site.id);
+  setEditSiteName(site.site_name);
+};
+
+const updateSite = async () => {
+  try {
+    await axios.put(
+      `http://127.0.0.1:8000/sites/${editingSiteId}`,
+      {
+        site_name: editSiteName,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    alert("Site updated successfully!");
+
+    setEditingSiteId(null);
+    setEditSiteName("");
+
+    fetchSites();
+  } catch (err) {
+    console.log(err);
+    alert("Failed to update site");
+  }
+};
+
+
+const inputStyle = {
+  width: "100%",
+  padding: "12px",
+  border: "1px solid #d1d5db",
+  borderRadius: "10px",
+  fontSize: "15px",
+  background: "#fff",
+  boxSizing: "border-box",
+};
+
+const gridStyle = {
+  display: "grid",
+  gridTemplateColumns: "repeat(2, 1fr)",
+  gap: "20px",
+};
   return (
-  <div style={{ maxWidth: "900px", margin: "auto", padding: "30px" }}>
-    <h1>🌍 Sites Management</h1>
+ <div
+  className={darkMode ? "dark" : ""}
+  style={{
+    minHeight: "100vh",
+    background: "var(--bg)",
+    color: "var(--text)",
+    padding: "40px",
+  }}
+>
+<div
+  style={{
+  width: "100%",
+  maxWidth: "1800px",
+  margin: "0 auto",
+  padding: "20px",
+}}
+>
+    <h1
+  style={{
+    fontSize: "36px",
+    color: "var(--text)",
+    marginBottom: "25px",
+    fontWeight: "700",
+  }}
+>
+🌍 Renewable Energy Resource Assessment
+</h1>
+<button
+  onClick={() => setDarkMode(!darkMode)}
+  style={{
+    marginBottom: "20px",
+    padding: "10px 18px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    border: "none",
+    background: "var(--button)",
+    color: "white",
+  }}
+>
+  {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+</button>
+<h2
+  style={{
+    color: "var(--text)",
+    marginBottom: "20px",
+  }}
+>
+  🔍 Search Location
+</h2>
 
-    <h2>🔍 Search Location</h2>
+
+   <div
+  style={{
+    background: "var(--card)",
+    borderRadius: "20px",
+    padding: "25px",
+    marginBottom: "25px",
+    boxShadow: "0 10px 30px rgba(0,0,0,.08)",
+  }}
+>
 
     <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
       <input
@@ -224,21 +402,6 @@ setCountry("");
       </button>
     </div>
 
-    <input
-  placeholder="Site Name"
-  value={siteName}
-  onChange={(e) => setSiteName(e.target.value)}
-/>
-
-<br /><br />
-
-<input
-  placeholder="Land Area (Acres)"
-  value={landArea}
-  readOnly
-/>
-      <br /><br />
-
       <button
         onClick={() => {
           navigator.geolocation.getCurrentPosition(
@@ -255,6 +418,7 @@ setCountry("");
     setLongitude(lon);
 
     getLocationDetails(lat, lon);
+    getWeatherDetails(lat, lon);
   },
   (error) => {
     console.log(error);
@@ -279,121 +443,283 @@ setCountry("");
   setLatitude={setLatitude}
   setLongitude={setLongitude}
   getLocationDetails={getLocationDetails}
+  getWeatherDetails={getWeatherDetails}
   setLandArea={setLandArea}
-/>
-
+  />
       <br /><br />
 
-      <input
-        placeholder="Latitude"
-        value={latitude}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="Longitude"
-        value={longitude}
-        readOnly
-      />
-
-      <br /><br />
-      <input
-  placeholder="Exact Location"
-  value={location}
-  readOnly
-/>
-
-<br /><br />
-
-      <input
-  placeholder="Taluk"
-  value={taluk}
-  readOnly
-/>
-
-<br /><br />
-
-      <input
-        placeholder="District"
-        value={district}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="State"
-        value={stateName}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="Country"
-        value={country}
-        readOnly
-      />
-
-      <br /><br />
-
-      <br /><br />
-
-      <input
-  placeholder="Elevation (Meters)"
-  value={elevation}
-  readOnly
-/>
-
-<br /><br />
-
-<button
-  onClick={predictSuitability}
+      <div
   style={{
-    background: "#2563eb",
+    background: "#ffffff",
+    padding: "25px",
+    borderRadius: "20px",
+    marginTop: "25px",
+    boxShadow: "0 10px 25px rgba(0,0,0,.08)",
+  }}
+>
+  <h2
+    style={{
+      color: "var(--text)",
+      marginBottom: "20px",
+    }}
+  >
+    📍 Site Information
+  </h2>
+
+  <div style={gridStyle}>
+
+    <input
+      style={inputStyle}
+      placeholder="Site Name"
+      value={siteName}
+      onChange={(e)=>setSiteName(e.target.value)}
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Land Area (Acres)"
+      value={landArea}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Latitude"
+      value={latitude}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Longitude"
+      value={longitude}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Exact Location"
+      value={location}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Taluk"
+      value={taluk}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="District"
+      value={district}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="State"
+      value={stateName}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Country"
+      value={country}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Elevation (Meters)"
+      value={elevation}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Infrastructure"
+      value={infrastructure}
+      readOnly
+    />
+
+    <input
+      style={inputStyle}
+      placeholder="Land Ownership"
+      value={ownership}
+      readOnly
+    />
+
+  </div>
+</div>
+
+      <br /><br />
+
+</div>
+<div
+  style={{
+    background: "#ffffff",
+    borderRadius: "20px",
+    padding: "25px",
+    marginTop: "30px",
+    marginBottom: "30px",
+    boxShadow: "0 10px 25px rgba(0,0,0,.08)",
+  }}
+>
+  <h2
+    style={{
+      color: "var(--text)",
+      marginBottom: "25px",
+    }}
+  >
+    📊 Resource Summary
+  </h2>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+      gap: "20px",
+    }}
+  >
+
+  <DashboardCard
+    title="Temperature"
+    value={temperature}
+    unit="°C"
+    icon="🌡️"
+    color="#ef4444"
+  />
+
+  <DashboardCard
+    title="Wind Speed"
+    value={windSpeed}
+    unit="km/h"
+    icon="💨"
+    color="#3b82f6"
+  />
+
+  <DashboardCard
+    title="Solar Radiation"
+    value={solarRadiation}
+    unit="W/m²"
+    icon="☀️"
+    color="#f59e0b"
+  />
+
+  <DashboardCard
+    title="Rainfall"
+    value={rainfall}
+    unit="mm"
+    icon="🌧️"
+    color="#0ea5e9"
+  />
+
+  <DashboardCard
+    title="Elevation"
+    value={elevation}
+    unit="m"
+    icon="🏔️"
+    color="#10b981"
+  />
+
+  <DashboardCard
+    title="Land Area"
+    value={landArea}
+    unit="Acres"
+    icon="📐"
+    color="#8b5cf6"
+  />
+</div>
+</div>
+</div>
+{prediction && (
+  <div
+    style={{
+      background: "#ffffff",
+      padding: "25px",
+      borderRadius: "20px",
+      marginTop: "20px",
+      marginBottom: "20px",
+      boxShadow: "0 10px 25px rgba(0,0,0,.08)",
+      textAlign: "center",
+    }}
+  >
+    <h2 style={{ color: "#0f766e", marginBottom: "20px" }}>
+      🤖 AI Site Suitability Analysis
+    </h2>
+
+    <h1
+      style={{
+        fontSize: "60px",
+        color: "#16a34a",
+        margin: "15px 0",
+      }}
+    >
+      {score}%
+    </h1>
+
+    <progress
+      value={score}
+      max="100"
+      style={{
+        width: "100%",
+        height: "20px",
+      }}
+    />
+
+    <h3 style={{ marginTop: "20px" }}>
+      Prediction:
+      <span
+        style={{
+          color: prediction === "Suitable" ? "green" : "red",
+        }}
+      >
+        {" "}{prediction}
+      </span>
+    </h3>
+
+    <h3>{rating}</h3>
+  </div>
+)}
+<button
+  onClick={() =>
+    navigate("/report", {
+      state: {
+        siteName,
+        latitude,
+        longitude,
+        location,
+        taluk,
+        district,
+        stateName,
+        country,
+        landArea,
+        elevation,
+        temperature,
+        windSpeed,
+        rainfall,
+        solarRadiation,
+        infrastructure,
+        ownership,
+        prediction,
+      },
+    })
+  }
+  style={{
+    background: "#16a34a",
     color: "white",
-    border: "none",
     padding: "12px 20px",
+    border: "none",
     borderRadius: "8px",
     cursor: "pointer",
   }}
 >
-  🤖 Predict Suitability
+📄 Generate Resource Report
 </button>
-
 <br /><br />
-
-{prediction && (
-  <div
-    style={{
-      background: "#dcfce7",
-      color: "#166534",
-      padding: "15px",
-      borderRadius: "10px",
-      fontWeight: "bold",
-      marginBottom: "20px",
-    }}
-  >
-    AI Prediction: {prediction}
-  </div>
-)}
-
-<input
-  placeholder="Infrastructure"
-  value={infrastructure}
-  readOnly
-/>
-      <br /><br />
-
-      <input
-  placeholder="Land Ownership"
-  value={ownership}
-  readOnly
-/>
-
-      <br /><br />
 
       <input
         placeholder="Project ID"
@@ -408,7 +734,16 @@ setCountry("");
       </button>
 
       <hr />
+      <AnalyticsCharts
+      temperature={temperature}
+      windSpeed={windSpeed}
+      rainfall={rainfall}
+      solarRadiation={solarRadiation}
+      elevation={elevation}
+      landArea={landArea}
+      />
 
+<br />
       <h2>Existing Sites</h2>
 
       {sites.length === 0 ? (
@@ -424,21 +759,99 @@ setCountry("");
               borderRadius: "12px",
             }}
           >
-            <h3>{site.site_name}</h3>
+            {editingSiteId === site.id ? (
+  <>
+    <input
+      value={editSiteName}
+      onChange={(e) => setEditSiteName(e.target.value)}
+      style={{
+        width: "100%",
+        padding: "10px",
+        marginBottom: "10px",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+      }}
+    />
 
-            <p><strong>Latitude:</strong> {site.latitude}</p>
+    <button
+      onClick={updateSite}
+      style={{
+        background: "#16a34a",
+        color: "white",
+        border: "none",
+        padding: "8px 14px",
+        borderRadius: "8px",
+        cursor: "pointer",
+        marginRight: "10px",
+      }}
+    >
+      💾 Save
+    </button>
 
-            <p><strong>Longitude:</strong> {site.longitude}</p>
+    <button
+      onClick={() => setEditingSiteId(null)}
+      style={{
+        background: "#6b7280",
+        color: "white",
+        border: "none",
+        padding: "8px 14px",
+        borderRadius: "8px",
+        cursor: "pointer",
+      }}
+    >
+      Cancel
+    </button>
+  </>
+) : (
+  <h3>{site.site_name}</h3>
+)}
 
-            <p><strong>Land Area:</strong> {site.land_area}</p>
+<p><strong>Latitude:</strong> {site.latitude}</p>
 
-            <p><strong>Elevation:</strong> {site.elevation}</p>
+<p><strong>Longitude:</strong> {site.longitude}</p>
 
-            <p><strong>Infrastructure:</strong> {site.infrastructure}</p>
+<p><strong>Land Area:</strong> {site.land_area}</p>
 
-            <p><strong>Ownership:</strong> {site.land_ownership}</p>
+<p><strong>Elevation:</strong> {site.elevation}</p>
 
-            <p><strong>Project ID:</strong> {site.project_id}</p>
+<p><strong>Infrastructure:</strong> {site.infrastructure}</p>
+
+<p><strong>Ownership:</strong> {site.land_ownership}</p>
+
+<p><strong>Project ID:</strong> {site.project_id}</p>
+
+<div style={{ marginTop: "15px" }}>
+  <button
+    onClick={() => editSite(site)}
+    style={{
+      background: "#2563eb",
+      color: "white",
+      border: "none",
+      padding: "8px 14px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      marginRight: "10px",
+    }}
+  >
+    ✏ Edit
+  </button>
+
+  <button
+    onClick={() => deleteSite(site.id)}
+    style={{
+      background: "#dc2626",
+      color: "white",
+      border: "none",
+      padding: "8px 14px",
+      borderRadius: "8px",
+      cursor: "pointer",
+    }}
+  >
+    🗑 Delete
+  </button>
+</div>
+
+            
           </div>
         ))
       )}

@@ -1,154 +1,131 @@
-import { Link, useNavigate } from "react-router-dom";
-import "../styles/dashboard.css";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import {
+  FaFolderOpen,
+  FaMapMarkerAlt,
+  FaChartLine,
+  FaMoneyBillWave,
+} from "react-icons/fa";
+
+import Sidebar from "../components/Sidebar";
+import PageHeader from "../components/PageHeader";
+import StatCard from "../components/StatCard";
+import api from "../api/api";
 
 function Dashboard() {
-  const navigate = useNavigate();
-
-  const email = localStorage.getItem("email");
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
-
   const [projects, setProjects] = useState([]);
   const [sites, setSites] = useState([]);
-
-  function logout() {
-    localStorage.clear();
-    navigate("/login");
-  }
-
-  // Fetch Projects
-  const fetchProjects = async () => {
-    try {
-      const res = await axios.get(
-        "http://127.0.0.1:8000/projects/",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setProjects(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Fetch Sites
-  // Fetch Sites
-const fetchSites = async () => {
-  try {
-    const res = await axios.get(
-      "http://127.0.0.1:8000/sites/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setSites(res.data);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
+  const [user, setUser] = useState(null);
   useEffect(() => {
-    fetchProjects();
-    fetchSites();
+    loadDashboard();
   }, []);
 
+  async function loadDashboard() {
+    try {
+      const [projectsRes, sitesRes, userRes] = await Promise.all([
+  api.get("/projects"),
+  api.get("/sites"),
+  api.get("/users/me"),
+]);
+console.log(userRes.data);
+setProjects(projectsRes.data);
+setSites(sitesRes.data);
+setUser(userRes.data);
+
+      setProjects(projectsRes.data);
+      setSites(sitesRes.data);
+    } catch (error) {
+      console.log("Dashboard Error:", error);
+    }
+  }
+
+  const totalGeneration = sites.length * 7.8;
+  const estimatedROI = 15 + projects.length * 0.4;
+
   return (
-    <div className="dashboard">
+    <div className="flex bg-slate-100 min-h-screen">
+      <Sidebar />
 
-      {/* Navbar */}
+      <div className="flex-1 p-8">
+<PageHeader
+  title={`👋 Welcome, ${user ? user.username : "User"}`}
+  subtitle="AI-powered Solar & Wind Deployment Intelligence Platform"
+/>
 
-      <div className="navbar">
-        <h2>🌞 Solar & Wind Deployment Intelligence Platform</h2>
+        {/* Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
 
-        <button className="logout" onClick={logout}>
-          Logout
-        </button>
-      </div>
+          <StatCard
+            icon={<FaFolderOpen className="text-emerald-600" />}
+            title="Projects"
+            value={projects.length}
+          />
 
-      <div className="layout">
+          <StatCard
+            icon={<FaMapMarkerAlt className="text-blue-600" />}
+            title="Sites"
+            value={sites.length}
+          />
 
-        {/* Sidebar */}
+          <StatCard
+            icon={<FaChartLine className="text-orange-500" />}
+            title="Estimated Forecast"
+            value={`${totalGeneration.toFixed(1)} GWh`}
+          />
 
-        <div className="sidebar">
-          <Link to="/dashboard">🏠 Dashboard</Link>
+          <StatCard
+            icon={<FaMoneyBillWave className="text-green-600" />}
+            title="Estimated ROI"
+            value={`${estimatedROI.toFixed(1)}%`}
+          />
 
-          <Link to="/projects">📁 Projects</Link>
-
-          <Link to="/sites">📍 Sites</Link>
-
-          <Link to="/change-password">🔒 Change Password</Link>
         </div>
 
-        {/* Main */}
+        {/* Welcome Card */}
 
-        <div className="main">
+        <div className="bg-white rounded-3xl shadow-lg p-10">
 
-          <h1>Welcome 👋</h1>
+          <h2 className="text-3xl font-bold text-green-700 mb-4">
+            🌿 Solar & Wind Deployment Intelligence Platform
+          </h2>
 
-          <p>
-            <strong>Email:</strong> {email}
+          <p className="text-gray-700 text-lg leading-8">
+            Welcome to your Renewable Energy Intelligence Dashboard.
+            Manage your renewable energy projects, analyze deployment sites,
+            evaluate environmental conditions, generate AI-powered reports,
+            forecast renewable energy potential, and optimize investment
+            decisions—all from one platform.
           </p>
 
-          <p>
-            <strong>Role:</strong> {role}
-          </p>
+          <div className="mt-8 grid md:grid-cols-3 gap-6">
 
-          <div className="cards">
+            <div className="bg-green-50 rounded-2xl p-6">
+              <h3 className="font-bold text-xl text-green-700">
+                📁 Projects
+              </h3>
 
-            {/* Projects */}
-
-            <div className="card">
-              <h2>📁 Projects</h2>
-
-              <h1>{projects.length}</h1>
-
-              <p>Total Renewable Projects</p>
-
-              <br />
-
-              <button onClick={() => navigate("/projects")}>
-                Open Projects
-              </button>
+              <p className="mt-3 text-gray-600">
+                Create and manage renewable energy projects.
+              </p>
             </div>
 
-            {/* Sites */}
+            <div className="bg-blue-50 rounded-2xl p-6">
+              <h3 className="font-bold text-xl text-blue-700">
+                📍 Sites
+              </h3>
 
-            <div className="card">
-              <h2>📍 Sites</h2>
-
-              <h1>{sites.length}</h1>
-
-              <p>Total Renewable Sites</p>
-
-              <br />
-
-              <button onClick={() => navigate("/sites")}>
-                Open Sites
-              </button>
+              <p className="mt-3 text-gray-600">
+                Add project sites and perform AI-based analysis.
+              </p>
             </div>
 
-            {/* Security */}
+            <div className="bg-yellow-50 rounded-2xl p-6">
+              <h3 className="font-bold text-xl text-yellow-700">
+                📊 Reports
+              </h3>
 
-            <div className="card">
-              <h2>🔒 Security</h2>
-
-              <p>Update your account password securely.</p>
-
-              <br />
-
-              <button
-                onClick={() => navigate("/change-password")}
-              >
-                Change Password
-              </button>
+              <p className="mt-3 text-gray-600">
+                Generate renewable energy reports and investment insights.
+              </p>
             </div>
 
           </div>
@@ -156,7 +133,6 @@ const fetchSites = async () => {
         </div>
 
       </div>
-
     </div>
   );
 }

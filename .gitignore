@@ -1,4 +1,29 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+
+# Environment files
 .env
+.env.*
+
+# Node
 node_modules/
+frontend/dist/
+
+# Testing
+.pytest_cache/
+
+# IDE
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Unrelated embedded project
+backend/src/ai-trip-planner/

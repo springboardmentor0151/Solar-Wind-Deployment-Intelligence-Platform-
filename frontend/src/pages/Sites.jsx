@@ -1,447 +1,400 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import MapPicker from "../components/MapPicker";
+import Sidebar from "../components/Sidebar";
+import api from "../api/api";
 
-export default function Sites() {
-  const token = localStorage.getItem("token");
+import PageHeader from "../components/PageHeader";
+import InputField from "../components/InputField";
+import PrimaryButton from "../components/PrimaryButton";
+import StatCard from "../components/StatCard";
 
+import {
+  FaMapMarkerAlt,
+  FaDatabase,
+  FaProjectDiagram,
+  FaCheckCircle,
+  FaLeaf,
+  FaGlobe,
+} from "react-icons/fa";
+
+function Sites() {
   const [sites, setSites] = useState([]);
 
-  const [siteName, setSiteName] = useState("");
+  const [name, setName] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
-  const [landArea, setLandArea] = useState("");
-  const [elevation, setElevation] = useState("");
-  const [infrastructure, setInfrastructure] = useState("");
-  const [ownership, setOwnership] = useState("");
-  const [projectId, setProjectId] = useState("1");
+  const [projectId, setProjectId] = useState("");
 
-  const [district, setDistrict] = useState("");
-  const [stateName, setStateName] = useState("");
-  const [country, setCountry] = useState("");
-  const [searchLocation, setSearchLocation] = useState("");
-  const [prediction, setPrediction] = useState("");
-  const [location, setLocation] = useState("");
-  const [taluk, setTaluk] = useState("");
-
- const fetchSites = async () => {
-  try {
-    const res = await axios.get(
-      "http://127.0.0.1:8000/sites/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    setSites(res.data);
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-  useEffect(() => {
-    fetchSites();
-  }, []);
-
-  const getLocationDetails = async (lat, lon) => {
-  try {
-    const response = await axios.get(
-      `http://127.0.0.1:8000/location/details?lat=${lat}&lon=${lon}`
-    );
-
-    const data = response.data;
-    console.log("Location API Response:", data);
-
-    setLocation(data.location || "");
-setTaluk(data.taluk || "");
-setDistrict(data.district || "");
-setStateName(data.state || "");
-setCountry(data.country || "");
-    setElevation(data.elevation || "");
-    setInfrastructure(data.infrastructure || "");
-    setOwnership(data.ownership || "");
-
-  } catch (err) {
-    console.log(err);
-    alert("Unable to fetch location details");
-  }
-};
-const searchPlace = async () => {
-  if (!searchLocation.trim()) {
-    alert("Please enter a location");
-    return;
-  }
-
-  try {
-    const response = await axios.get(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchLocation)}`
-    );
-
-    if (response.data.length === 0) {
-      alert("Location not found");
-      return;
+  async function loadSites() {
+    try {
+      const response = await api.get("/sites");
+      setSites(response.data);
+    } catch (error) {
+      console.log(error);
     }
-
-    const place = response.data[0];
-
-    const lat = Number(place.lat).toFixed(6);
-    const lon = Number(place.lon).toFixed(6);
-
-    setLatitude(lat);
-    setLongitude(lon);
-
-    await getLocationDetails(lat, lon);
-
-    alert("Location Found Successfully!");
-  } catch (err) {
-    console.log(err);
-    alert("Unable to search location");
-  }
-};
-const predictSuitability = async () => {
-
-  console.log({
-    latitude,
-    longitude,
-    landArea,
-    elevation
-  });
-
-  if (!latitude || !longitude || !landArea || !elevation) {
-    alert("Please select a location and enter land area and elevation.");
-    return;
   }
 
-  try {
-    const res = await axios.post(
-      "http://127.0.0.1:8000/predict/",
-      {
-        latitude: Number(latitude),
-        longitude: Number(longitude),
-        land_area: Number(landArea),
-        elevation: Number(elevation),
-      }
-    );
-
-    setPrediction(res.data.prediction);
-  } catch (err) {
-    console.log(err);
-    alert("Prediction failed");
-  }
-};
-const createSite = async () => {
-    if (
-      !siteName ||
-      !latitude ||
-      !longitude ||
-      !landArea ||
-      !elevation ||
-      !infrastructure ||
-      !ownership ||
-      !projectId
-    ) {
-      alert("Please fill all fields.");
-      return;
-    }
+  async function handleSubmit(e) {
+    e.preventDefault();
 
     try {
-      await axios.post(
-        "http://127.0.0.1:8000/sites/",
-        {
-          site_name: siteName,
-          latitude: Number(latitude),
-          longitude: Number(longitude),
-          land_area: Number(landArea),
-          elevation: Number(elevation),
-          infrastructure,
-          land_ownership: ownership,
-          project_id: Number(projectId),
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.post("/sites", {
+        name,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+        project_id: Number(projectId),
+      });
 
-      alert("Site Created Successfully");
-
-      setSiteName("");
+      setName("");
       setLatitude("");
       setLongitude("");
-      setLandArea("");
-      setElevation("");
-      setInfrastructure("");
-      setOwnership("");
+      setProjectId("");
 
-      setLocation("");
-setTaluk("");
-setDistrict("");
-setStateName("");
-setCountry("");
+      loadSites();
 
-      fetchSites();
-    } catch (err) {
-      console.log(err);
-      alert("Failed to create site");
+    } catch (error) {
+      console.log(error);
+
+      if (error.response) {
+        alert(JSON.stringify(error.response.data, null, 2));
+      }
     }
-  };
+  }
+
+  useEffect(() => {
+    loadSites();
+  }, []);
 
   return (
-  <div style={{ maxWidth: "900px", margin: "auto", padding: "30px" }}>
-    <h1>🌍 Sites Management</h1>
+    <div className="flex">
 
-    <h2>🔍 Search Location</h2>
+      <Sidebar />
 
-    <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-      <input
-        type="text"
-        placeholder="Search city, village or district"
-        value={searchLocation}
-        onChange={(e) => setSearchLocation(e.target.value)}
-        style={{
-          flex: 1,
-          padding: "12px",
-          borderRadius: "8px",
-          border: "1px solid #ccc"
-        }}
-      />
+      <div className="flex-1 bg-slate-100 min-h-screen">
 
-      <button
-        onClick={searchPlace}
-        style={{
-          background: "#0f766e",
-          color: "white",
-          border: "none",
-          padding: "12px 20px",
-          borderRadius: "8px",
-          cursor: "pointer"
-        }}
-      >
-        Search
-      </button>
+        <div className="p-8">
+
+          <PageHeader
+            title="📍 Site Management"
+            subtitle="Manage renewable energy deployment sites with AI insights."
+          />
+
+          {/* KPI */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+
+            <StatCard
+              icon={<FaDatabase className="text-green-600" />}
+              title="Total Sites"
+              value={sites.length}
+            />
+
+            <StatCard
+              icon={<FaProjectDiagram className="text-blue-600" />}
+              title="Projects Linked"
+              value={
+                new Set(sites.map((s) => s.project_id)).size
+              }
+            />
+
+            <StatCard
+              icon={<FaCheckCircle className="text-emerald-600" />}
+              title="Status"
+              value="Active"
+            />
+
+            <StatCard
+              icon={<FaLeaf className="text-lime-600" />}
+              title="AI Ready"
+              value="100%"
+            />
+
+          </div>
+         {/* Create Site + Summary */}
+
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+
+  {/* Create Site Form */}
+
+  <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg p-8">
+
+    <div className="flex items-center gap-3 mb-6">
+
+      <div className="bg-green-100 p-3 rounded-xl">
+        <FaMapMarkerAlt className="text-green-600 text-2xl" />
+      </div>
+
+      <div>
+
+        <h2 className="text-2xl font-bold text-slate-800">
+          Create New Site
+        </h2>
+
+        <p className="text-gray-500">
+          Register a renewable energy deployment location.
+        </p>
+
+      </div>
+
     </div>
 
-    <input
-  placeholder="Site Name"
-  value={siteName}
-  onChange={(e) => setSiteName(e.target.value)}
-/>
+    <form onSubmit={handleSubmit}>
 
-<br /><br />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-<input
-  placeholder="Land Area (Acres)"
-  value={landArea}
-  readOnly
-/>
-      <br /><br />
+        <InputField
+          type="text"
+          placeholder="Site Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-      <button
-        onClick={() => {
-          navigator.geolocation.getCurrentPosition(
-  (position) => {
-    console.log(position);
+        <InputField
+          type="number"
+          placeholder="Project ID"
+          value={projectId}
+          onChange={(e) => setProjectId(e.target.value)}
+        />
 
-    const lat = position.coords.latitude.toFixed(6);
-    const lon = position.coords.longitude.toFixed(6);
+        <InputField
+          type="number"
+          step="any"
+          placeholder="Latitude"
+          value={latitude}
+          onChange={(e) => setLatitude(e.target.value)}
+        />
 
-    console.log("Current Latitude:", lat);
-    console.log("Current Longitude:", lon);
+        <InputField
+          type="number"
+          step="any"
+          placeholder="Longitude"
+          value={longitude}
+          onChange={(e) => setLongitude(e.target.value)}
+        />
 
-    setLatitude(lat);
-    setLongitude(lon);
+      </div>
 
-    getLocationDetails(lat, lon);
-  },
-  (error) => {
-    console.log(error);
-    alert(error.message);
-  },
-  {
-    enableHighAccuracy: true,
-    timeout: 10000,
-    maximumAge: 0,
-  }
-);
-        }}
-      >
-        📍 Use My Current Location
-      </button>
+      <div className="mt-8">
+        <PrimaryButton text="Create Site" />
+      </div>
 
-      <br /><br />
+    </form>
 
-      <MapPicker
-  latitude={latitude}
-  longitude={longitude}
-  setLatitude={setLatitude}
-  setLongitude={setLongitude}
-  getLocationDetails={getLocationDetails}
-  setLandArea={setLandArea}
-/>
-
-      <br /><br />
-
-      <input
-        placeholder="Latitude"
-        value={latitude}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="Longitude"
-        value={longitude}
-        readOnly
-      />
-
-      <br /><br />
-      <input
-  placeholder="Exact Location"
-  value={location}
-  readOnly
-/>
-
-<br /><br />
-
-      <input
-  placeholder="Taluk"
-  value={taluk}
-  readOnly
-/>
-
-<br /><br />
-
-      <input
-        placeholder="District"
-        value={district}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="State"
-        value={stateName}
-        readOnly
-      />
-
-      <br /><br />
-
-      <input
-        placeholder="Country"
-        value={country}
-        readOnly
-      />
-
-      <br /><br />
-
-      <br /><br />
-
-      <input
-  placeholder="Elevation (Meters)"
-  value={elevation}
-  readOnly
-/>
-
-<br /><br />
-
-<button
-  onClick={predictSuitability}
-  style={{
-    background: "#2563eb",
-    color: "white",
-    border: "none",
-    padding: "12px 20px",
-    borderRadius: "8px",
-    cursor: "pointer",
-  }}
->
-  🤖 Predict Suitability
-</button>
-
-<br /><br />
-
-{prediction && (
-  <div
-    style={{
-      background: "#dcfce7",
-      color: "#166534",
-      padding: "15px",
-      borderRadius: "10px",
-      fontWeight: "bold",
-      marginBottom: "20px",
-    }}
-  >
-    AI Prediction: {prediction}
   </div>
-)}
 
-<input
-  placeholder="Infrastructure"
-  value={infrastructure}
-  readOnly
-/>
-      <br /><br />
+  {/* Deployment Summary */}
 
-      <input
-  placeholder="Land Ownership"
-  value={ownership}
-  readOnly
-/>
+  <div className="bg-gradient-to-br from-green-600 via-emerald-500 to-teal-500 rounded-3xl shadow-xl text-white p-8">
 
-      <br /><br />
+    <h2 className="text-2xl font-bold mb-8">
+      Deployment Summary
+    </h2>
 
-      <input
-        placeholder="Project ID"
-        value={projectId}
-        onChange={(e) => setProjectId(e.target.value)}
-      />
+    <div className="space-y-6">
 
-      <br /><br />
+      <div className="bg-white/10 rounded-xl p-4">
 
-      <button onClick={createSite}>
-        Create Site
-      </button>
+        <p className="text-green-100 text-sm">
+          Total Sites
+        </p>
 
-      <hr />
+        <h2 className="text-4xl font-bold">
+          {sites.length}
+        </h2>
 
-      <h2>Existing Sites</h2>
+      </div>
 
-      {sites.length === 0 ? (
-        <p>No Sites Found</p>
-      ) : (
-        sites.map((site) => (
-          <div
-            key={site.id}
-            style={{
-              border: "1px solid #ddd",
-              padding: "20px",
-              marginBottom: "15px",
-              borderRadius: "12px",
-            }}
-          >
-            <h3>{site.site_name}</h3>
+      <div className="flex justify-between items-center">
 
-            <p><strong>Latitude:</strong> {site.latitude}</p>
+        <span className="flex items-center gap-2">
+          <FaGlobe />
+          GIS Ready
+        </span>
 
-            <p><strong>Longitude:</strong> {site.longitude}</p>
+        <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
+          Enabled
+        </span>
 
-            <p><strong>Land Area:</strong> {site.land_area}</p>
+      </div>
 
-            <p><strong>Elevation:</strong> {site.elevation}</p>
+      <div className="flex justify-between items-center">
 
-            <p><strong>Infrastructure:</strong> {site.infrastructure}</p>
+        <span className="flex items-center gap-2">
+          <FaLeaf />
+          Renewable
+        </span>
 
-            <p><strong>Ownership:</strong> {site.land_ownership}</p>
+        <span className="bg-white/20 px-3 py-1 rounded-full text-sm">
+          Active
+        </span>
 
-            <p><strong>Project ID:</strong> {site.project_id}</p>
+      </div>
+
+      <div className="flex justify-between items-center">
+
+        <span className="flex items-center gap-2">
+          <FaProjectDiagram />
+          Projects
+        </span>
+
+        <span className="font-semibold">
+          {new Set(sites.map((s) => s.project_id)).size}
+        </span>
+
+      </div>
+
+      <div className="mt-8">
+
+        <div className="flex justify-between mb-2">
+
+          <span>Deployment Progress</span>
+
+          <span>100%</span>
+
+        </div>
+
+        <div className="w-full bg-white/20 rounded-full h-3">
+
+          <div className="bg-white h-3 rounded-full w-full"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+   
+
+          {/* Renewable Energy Sites */}
+
+          <div className="mb-6">
+
+            <h2 className="text-3xl font-bold text-slate-800">
+              Renewable Energy Sites
+            </h2>
+
+            <p className="text-gray-500">
+              View all deployed renewable energy locations.
+            </p>
+
           </div>
-        ))
-      )}
+
+          {sites.length === 0 ? (
+
+            <div className="bg-white rounded-2xl shadow-md p-12 text-center">
+
+              <FaMapMarkerAlt className="mx-auto text-6xl text-green-500 mb-4" />
+
+              <h2 className="text-2xl font-bold">
+                No Sites Available
+              </h2>
+
+              <p className="text-gray-500 mt-2">
+                Create your first renewable energy site.
+              </p>
+
+            </div>
+
+          ) : (
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+              {sites.map((site) => (
+
+                <div
+                  key={site.id}
+                  className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+                >
+
+                  <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-5 text-white">
+
+                    <div className="flex justify-between items-center">
+
+                      <div>
+
+                        <h2 className="text-xl font-bold">
+                          {site.name}
+                        </h2>
+
+                        <p className="text-green-100">
+                          Site #{site.id}
+                        </p>
+
+                      </div>
+
+                      <div className="bg-white/20 p-3 rounded-full">
+
+                        <FaMapMarkerAlt size={24} />
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div className="p-6 space-y-4">
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">
+                        Project
+                      </span>
+
+                      <span className="font-semibold">
+                        #{site.project_id}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">
+                        Latitude
+                      </span>
+
+                      <span className="font-medium">
+                        {site.latitude}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">
+                        Longitude
+                      </span>
+
+                      <span className="font-medium">
+                        {site.longitude}
+                      </span>
+                    </div>
+
+                    <hr />
+
+                    <div className="flex justify-between items-center">
+
+                      <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+                        Active
+                      </span>
+
+                      <span className="text-sm text-gray-500">
+                        Renewable Site
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+
+        </div>
+      </div>
     </div>
   );
 }
+
+export default Sites;

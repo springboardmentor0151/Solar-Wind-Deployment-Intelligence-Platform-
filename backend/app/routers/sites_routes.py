@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import Site, Project, User
-from ..schemas import SiteCreate, SiteOut
+from ..schemas import SiteCreate, SiteOut, SiteUpdate
 from ..deps import get_current_user
 
 router = APIRouter(
@@ -101,12 +101,12 @@ def get_all_sites(
 
 
 # ==========================
-# Update Site
+# Update Site Name
 # ==========================
 @router.put("/{site_id}", response_model=SiteOut)
 def update_site(
     site_id: int,
-    payload: SiteCreate,
+    payload: SiteUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -127,20 +127,8 @@ def update_site(
             detail="Site not found"
         )
 
+    # Update only site name
     site.site_name = payload.site_name
-    site.latitude = payload.latitude
-    site.longitude = payload.longitude
-    site.land_area = payload.land_area
-    site.elevation = payload.elevation
-    site.infrastructure = payload.infrastructure
-    site.land_ownership = payload.land_ownership
-
-    # AI Results
-    site.prediction = payload.prediction
-    site.score = payload.score
-    site.rating = payload.rating
-
-    site.project_id = payload.project_id
 
     db.commit()
     db.refresh(site)

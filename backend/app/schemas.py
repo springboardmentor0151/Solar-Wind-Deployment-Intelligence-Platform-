@@ -70,6 +70,7 @@ class ProjectOut(BaseModel):
 
 class SiteCreate(BaseModel):
     site_name: str
+
     latitude: float
     longitude: float
 
@@ -86,6 +87,18 @@ class SiteCreate(BaseModel):
 
     project_id: int
 
+
+# ==========================
+# SITE UPDATE
+# ==========================
+
+class SiteUpdate(BaseModel):
+    site_name: str
+
+
+# ==========================
+# SITE OUTPUT
+# ==========================
 
 class SiteOut(BaseModel):
     id: int

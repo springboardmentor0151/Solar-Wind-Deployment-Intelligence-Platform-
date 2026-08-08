@@ -13,24 +13,31 @@ export default function ResourceReport() {
   }
 
   const {
-    siteName,
-    latitude,
-    longitude,
-    location,
-    taluk,
-    district,
-    stateName,
-    country,
-    landArea,
-    elevation,
-    temperature,
-    windSpeed,
-    rainfall,
-    solarRadiation,
-    infrastructure,
-    ownership,
-    prediction,
-  } = state;
+  siteName,
+  latitude,
+  longitude,
+  location,
+  taluk,
+  district,
+  stateName,
+  country,
+
+  landArea,
+  elevation,
+
+  temperature,
+  windSpeed,
+  rainfall,
+  solarRadiation,
+
+  infrastructure,
+  ownership,
+
+  prediction,
+  score,
+  rating,
+  recommendations,
+} = location.state;
 
   const downloadPDF = () => {
     const doc = new jsPDF();

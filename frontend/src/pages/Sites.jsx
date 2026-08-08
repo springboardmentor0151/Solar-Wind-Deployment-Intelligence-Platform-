@@ -27,7 +27,7 @@ export default function Sites() {
   const [stateName, setStateName] = useState("");
   const [country, setCountry] = useState("");
   const [searchLocation, setSearchLocation] = useState("");
-  const [prediction, setPrediction] = useState("");
+  const [prediction, setPrediction] = useState(null);
   const [score, setScore] = useState(0);
   const [rating, setRating] = useState("");
   const [location, setLocation] = useState("");
@@ -190,27 +190,51 @@ const createSite = async () => {
     }
 
     try {
+       // ===========================
+  // AI Prediction API
+  // ===========================
+  const predictionResponse = await axios.post(
+    "http://127.0.0.1:8000/predict/",
+    {
+      latitude: Number(latitude),
+      longitude: Number(longitude),
+      land_area: Number(landArea),
+      elevation: Number(elevation),
+      solar_radiation: Number(solarRadiation),
+      wind_speed: Number(windSpeed),
+      temperature: Number(temperature),
+      rainfall: Number(rainfall),
+    }
+  );
+
+ const aiResult = predictionResponse.data;
+
+setPrediction(aiResult.prediction);
+setScore(aiResult.score);
+setRating(aiResult.rating);
       await axios.post(
-        "http://127.0.0.1:8000/sites/",
-        {
-  site_name: siteName,
-  latitude: Number(latitude),
-  longitude: Number(longitude),
-  land_area: Number(landArea),
-  elevation: Number(elevation),
-  infrastructure,
-  land_ownership: ownership,
-  prediction,
-  score,
-  rating,
-  project_id: Number(projectId),
-},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  "http://127.0.0.1:8000/sites/",
+  {
+    site_name: siteName,
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+    land_area: Number(landArea),
+    elevation: Number(elevation),
+    infrastructure,
+    land_ownership: ownership,
+
+    prediction: aiResult.prediction,
+    score: aiResult.score,
+    rating: aiResult.rating,
+
+    project_id: Number(projectId),
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
 
       alert("Site Created Successfully");
 
@@ -686,28 +710,35 @@ const gridStyle = {
 )}
 <button
   onClick={() =>
-    navigate("/report", {
-      state: {
-        siteName,
-        latitude,
-        longitude,
-        location,
-        taluk,
-        district,
-        stateName,
-        country,
-        landArea,
-        elevation,
-        temperature,
-        windSpeed,
-        rainfall,
-        solarRadiation,
-        infrastructure,
-        ownership,
-        prediction,
-      },
-    })
-  }
+  navigate("/report", {
+    state: {
+      siteName,
+      latitude,
+      longitude,
+      location,
+      taluk,
+      district,
+      stateName,
+      country,
+
+      landArea,
+      elevation,
+      temperature,
+      windSpeed,
+      rainfall,
+      solarRadiation,
+
+      infrastructure,
+      ownership,
+
+      // AI Results
+      prediction,
+      score,
+      rating,
+      recommendations,
+    },
+  })
+}
   style={{
     background: "#16a34a",
     color: "white",

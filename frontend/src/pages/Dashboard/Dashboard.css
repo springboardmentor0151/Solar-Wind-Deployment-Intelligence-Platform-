@@ -1,0 +1,435 @@
+/* ---------------- HERO ---------------- */
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 50px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #0f172a, #1565c0, #2e7d32);
+  color: white;
+  margin-bottom: 35px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  right: -120px;
+  top: -120px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+}
+
+.heroLeft{
+    width:60%;
+    z-index:2;
+}
+
+.hero h1{
+    font-size:48px;
+    margin:10px 0;
+}
+
+.hero h2{
+    font-weight:500;
+    margin-bottom:20px;
+}
+
+.heroText{
+    line-height:1.8;
+    max-width:600px;
+    opacity:.9;
+}
+
+.date{
+    letter-spacing:2px;
+    opacity:.75;
+}
+
+.heroButtons{
+    margin-top:35px;
+    display:flex;
+    gap:20px;
+}
+
+.primaryBtn{
+
+padding:15px 30px;
+
+border:none;
+
+border-radius:14px;
+
+background:#FFC107;
+
+font-weight:bold;
+
+cursor:pointer;
+
+transition:.3s;
+
+}
+
+.primaryBtn:hover{
+
+transform:translateY(-5px);
+
+}
+
+.secondaryBtn{
+
+padding:15px 30px;
+
+border:none;
+
+border-radius:14px;
+
+background:rgba(255,255,255,.15);
+
+color:white;
+
+cursor:pointer;
+
+backdrop-filter:blur(15px);
+
+}
+
+.heroRight{
+
+width:35%;
+
+display:flex;
+
+justify-content:center;
+
+position:relative;
+
+}
+
+.energyCircle{
+
+width:190px;
+
+height:190px;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#FFC107,#FF9800);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:80px;
+
+box-shadow:0 20px 60px rgba(255,193,7,.5);
+
+animation:float 4s infinite ease-in-out;
+
+}
+
+.floatingCard{
+
+position:absolute;
+
+bottom:-15px;
+
+right:0;
+
+display:flex;
+
+align-items:center;
+
+gap:15px;
+
+background:white;
+
+padding:18px;
+
+border-radius:18px;
+
+color:#111827;
+
+box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+}
+
+/* ---------------- KPI ---------------- */
+
+.cards{
+
+display:grid;
+
+grid-template-columns:repeat(4,1fr);
+
+gap:24px;
+
+margin:35px 0;
+
+}
+
+.card{
+
+background:white;
+
+padding:28px;
+
+border-radius:22px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+transition:.35s;
+
+position:relative;
+
+overflow:hidden;
+
+cursor:pointer;
+
+}
+
+.card::before{
+
+content:"";
+
+position:absolute;
+
+top:0;
+
+left:0;
+
+width:100%;
+
+height:5px;
+
+background:linear-gradient(90deg,#1565C0,#2E7D32);
+
+}
+
+.card:hover{
+
+transform:translateY(-10px);
+
+box-shadow:0 25px 50px rgba(0,0,0,.15);
+
+}
+
+.card svg{
+
+color:#1565C0;
+
+margin-bottom:15px;
+
+}
+
+.card span{
+
+display:block;
+
+margin-top:10px;
+
+color:#64748B;
+
+}
+
+.card h2{
+
+font-size:34px;
+
+margin:10px 0;
+
+}
+
+.card small{
+
+display:flex;
+
+align-items:center;
+
+gap:6px;
+
+color:#16A34A;
+
+}
+
+/* ---------------- BOTTOM ---------------- */
+
+.bottom{
+
+display:grid;
+
+grid-template-columns:2fr 1fr;
+
+gap:25px;
+
+margin-top:30px;
+
+}
+
+/* ---------------- MAP ---------------- */
+
+.map{
+
+background:white;
+
+padding:25px;
+
+border-radius:22px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+}
+
+.placeholder{
+
+height:420px;
+
+margin-top:20px;
+
+border-radius:20px;
+
+background:linear-gradient(135deg,#E3F2FD,#F1F8E9);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:30px;
+
+font-weight:bold;
+
+color:#64748B;
+
+transition:.3s;
+
+}
+
+.placeholder:hover{
+
+transform:scale(1.01);
+
+}
+
+/* ---------------- RIGHT PANEL ---------------- */
+
+.rightPanel{
+
+display:flex;
+
+flex-direction:column;
+
+gap:25px;
+
+}
+
+/* ---------------- AI ---------------- */
+
+.ai{
+
+background:white;
+
+padding:28px;
+
+border-radius:22px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+transition:.3s;
+
+}
+
+.ai:hover{
+
+transform:translateY(-8px);
+
+}
+
+.ai h1{
+
+font-size:38px;
+
+color:#1565C0;
+
+margin:15px 0;
+
+}
+
+.ai button{
+
+width:100%;
+
+margin-top:25px;
+
+padding:15px;
+
+border:none;
+
+border-radius:14px;
+
+background:linear-gradient(90deg,#1565C0,#2E7D32);
+
+color:white;
+
+cursor:pointer;
+
+font-size:16px;
+
+}
+
+/* ---------------- WEATHER ---------------- */
+
+.weather{
+
+background:white;
+
+padding:28px;
+
+border-radius:22px;
+
+text-align:center;
+
+box-shadow:0 15px 40px rgba(0,0,0,.08);
+
+}
+
+.weather h2{
+
+font-size:48px;
+
+color:#1565C0;
+
+margin:15px 0;
+
+}
+
+/* ---------------- ANIMATION ---------------- */
+
+@keyframes float{
+
+0%{
+
+transform:translateY(0);
+
+}
+
+50%{
+
+transform:translateY(-12px);
+
+}
+
+100%{
+
+transform:translateY(0);
+
+}
+
+}

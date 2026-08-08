@@ -1,42 +1,93 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import LandingPage from "./pages/LandingPage";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import Sites from "./pages/Sites";
-import ChangePassword from "./pages/ChangePassword";
+import Login from "./pages/Login/Login";
+import Register from "./pages/Register/Register";
+
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Projects from "./pages/Projects/Projects";
+import Sites from "./pages/Sites/Sites";
+import Environment from "./pages/Environment/Environment";
+import GIS from "./pages/GIS/GIS";
+import Analytics from "./pages/Analytics/Analytics";
+
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<LandingPage />} />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/signup" element={<Signup />} />
+        {/* =========================
+            PUBLIC ROUTES
+        ========================= */}
 
         <Route
-          path="/change-password"
-          element={<ChangePassword />}
+          path="/"
+          element={<Login />}
         />
 
         <Route
+          path="/register"
+          element={<Register />}
+        />
+
+
+        {/* =========================
+            PROTECTED ROUTES
+        ========================= */}
+
+        <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/projects"
-          element={<Projects />}
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/sites"
-          element={<Sites />}
+          element={
+            <ProtectedRoute>
+              <Sites />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/environment"
+          element={
+            <ProtectedRoute>
+              <Environment />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/gis"
+          element={
+            <ProtectedRoute>
+              <GIS />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
         />
 
       </Routes>

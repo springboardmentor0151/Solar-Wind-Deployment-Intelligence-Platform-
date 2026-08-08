@@ -1,0 +1,144 @@
+/* Full Screen Background */
+
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1565c0 45%,
+    #2e7d32 100%
+  );
+  overflow: hidden;
+  position: relative;
+}
+
+/* Floating Glow Circles */
+
+.login-container::before,
+.login-container::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+}
+
+.login-container::before {
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 193, 7, 0.35);
+  top: -80px;
+  left: -80px;
+}
+
+.login-container::after {
+  width: 350px;
+  height: 350px;
+  background: rgba(46, 125, 50, 0.35);
+  bottom: -100px;
+  right: -100px;
+}
+
+/* Glass Card */
+
+.login-card {
+  width: 430px;
+  padding: 45px;
+  border-radius: 28px;
+  backdrop-filter: blur(18px);
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,.25);
+  box-shadow: 0 15px 45px rgba(0,0,0,.25);
+}
+
+/* Logo */
+
+.logo {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.logo-icon {
+  font-size: 50px;
+}
+
+.logo h1 {
+  color: white;
+  font-size: 2rem;
+  margin-top: 10px;
+}
+
+.logo p {
+  color: rgba(255,255,255,.85);
+  margin-top: 8px;
+}
+
+/* Inputs */
+
+.input-box {
+  margin-top: 20px;
+}
+
+.input-box input {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  font-size: 15px;
+}
+
+/* Button */
+
+.login-btn {
+  width: 100%;
+  margin-top: 25px;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(90deg,#1565C0,#2E7D32);
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .35s;
+}
+
+.login-btn:hover{
+  transform: translateY(-3px);
+  box-shadow:0 10px 25px rgba(0,0,0,.3);
+}
+
+/* Footer */
+
+.footer{
+  margin-top:25px;
+  color:white;
+  text-align:center;
+  font-size:14px;
+  opacity:.8;
+}
+
+/* Register Link */
+
+.register-link {
+  margin-top: 20px;
+  margin-bottom: 5px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.register-link a {
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+  opacity: 0.85;
+}

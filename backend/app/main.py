@@ -1,25 +1,32 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
+from app.core.database import Base, engine
 
-from .routers import (
-    auth_routes,
-    projects_routes,
-    sites_routes,
-    predict,
-    location_info,
-)
+from app.routes.prediction import router as prediction_router
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+from app.models.user import User
+from app.models.project import Project
+from app.models.site import Site
+from app.models.environmental_data import EnvironmentalData
 
-# Create FastAPI app
+from app.routes.auth import router as auth_router
+from app.routes.project import router as project_router
+from app.routes.site import router as site_router
+from app.routes.environment import router as environment_router
+
+from app.models.prediction_history import PredictionHistory
+
+from app.routes.dashboard import router as dashboard_router
+
 app = FastAPI(
-    title="Solar & Wind Deployment Intelligence Platform"
+    title="Solar & Wind Deployment Intelligence Platform",
+    version="1.0.0"
 )
 
-# Enable CORS
+# -----------------------------
+# CORS Configuration
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -30,16 +37,36 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routers
-app.include_router(auth_routes.router)
-app.include_router(projects_routes.router)
-app.include_router(sites_routes.router)
-app.include_router(predict.router)
-app.include_router(location_info.router)
+# -----------------------------
+# Create Database Tables
+# -----------------------------
+Base.metadata.create_all(bind=engine)
 
-# Health Check
+# -----------------------------
+# Register API Routes
+# -----------------------------
+app.include_router(auth_router)
+app.include_router(project_router)
+app.include_router(site_router)
+app.include_router(environment_router)
+app.include_router(prediction_router)
+app.include_router(dashboard_router)
+
+# -----------------------------
+# Root Endpoint
+# -----------------------------
 @app.get("/")
+def home():
+    return {
+        "status": "running",
+        "message": "Infosys Internship Backend is working successfully."
+    }
+
+# -----------------------------
+# Health Check
+# -----------------------------
+@app.get("/health")
 def health():
     return {
-        "message": "Solar & Wind Deployment Intelligence Platform API running"
+        "status": "healthy"
     }

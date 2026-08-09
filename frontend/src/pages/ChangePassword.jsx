@@ -1,72 +1,118 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../services/api";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
+import PageHeader from "../components/ui/PageHeader";
+import Card from "../components/ui/Card";
+import { Lock, KeyRound, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
-export default function ChangePassword() {
-  const [current, setCurrent] = useState("");
-  const [newPass, setNewPass] = useState("");
-  const [confirm, setConfirm] = useState("");
+function ChangePassword() {
+    const [formData, setFormData] = useState({
+        current_password: "",
+        new_password: "",
+        confirm_password: ""
+    });
 
-  const changePassword = async () => {
-    try {
-      const token = localStorage.getItem("token");
+    const [message, setMessage] = useState("");
+    const [isError, setIsError] = useState(false);
 
-      await axios.post(
-        "http://127.0.0.1:8000/auth/change-password",
-        {
-          current_password: current,
-          new_password: newPass,
-          confirm_new_password: confirm,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await api.put("/auth/change-password", formData);
+            setMessage(response.data.message);
+            setIsError(false);
+            setFormData({
+                current_password: "",
+                new_password: "",
+                confirm_password: ""
+            });
+        } catch (error) {
+            setMessage(error.response?.data?.detail || "Something went wrong.");
+            setIsError(true);
         }
-      );
+        setTimeout(() => setMessage(""), 4000);
+    };
 
-      alert("Password Changed Successfully");
-    } catch (err) {
-      alert(err.response?.data?.detail);
-    }
-  };
+    return (
+        <div className="min-h-screen bg-night-950 px-4 py-8 sm:px-6 lg:px-8">
+            <PageHeader
+                badge="Security"
+                title="Change Password"
+                subtitle="Update your account password to keep your account secure."
+            />
 
-  return (
-    <div style={{ padding: "40px" }}>
-      <h1>Change Password</h1>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mx-auto max-w-xl"
+            >
+                <Card hover={false}>
+                    <div className="mb-6 flex items-center gap-3">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 shadow-lg">
+                            <Lock className="text-white" size={22} />
+                        </div>
+                        <div>
+                            <h2 className="font-display text-xl font-bold text-white">Account Security</h2>
+                            <p className="text-sm text-slate-400">Use a strong, unique password</p>
+                        </div>
+                    </div>
 
-      <input
-        type="password"
-        placeholder="Current Password"
-        value={current}
-        onChange={(e) => setCurrent(e.target.value)}
-      />
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <Input
+                            label="Current Password"
+                            type="password"
+                            name="current_password"
+                            value={formData.current_password}
+                            onChange={handleChange}
+                            placeholder="Enter current password"
+                            required
+                        />
+                        <Input
+                            label="New Password"
+                            type="password"
+                            name="new_password"
+                            value={formData.new_password}
+                            onChange={handleChange}
+                            placeholder="Enter new password"
+                            required
+                        />
+                        <Input
+                            label="Confirm New Password"
+                            type="password"
+                            name="confirm_password"
+                            value={formData.confirm_password}
+                            onChange={handleChange}
+                            placeholder="Confirm new password"
+                            required
+                        />
 
-      <br />
-      <br />
+                        <div className="flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3 text-sm text-cyan-300">
+                            <ShieldCheck size={18} />
+                            Your password is encrypted and securely stored.
+                        </div>
 
-      <input
-        type="password"
-        placeholder="New Password"
-        value={newPass}
-        onChange={(e) => setNewPass(e.target.value)}
-      />
+                        <Button type="submit" className="w-full">
+                            <KeyRound size={18} /> Change Password
+                        </Button>
+                    </form>
 
-      <br />
-      <br />
-
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={confirm}
-        onChange={(e) => setConfirm(e.target.value)}
-      />
-
-      <br />
-      <br />
-
-      <button onClick={changePassword}>
-        Change Password
-      </button>
-    </div>
-  );
+                    {message && (
+                        <div className={`mt-5 rounded-xl px-4 py-3 text-center font-medium ${
+                            isError ? "bg-red-500/20 text-red-400" : "bg-green-500/20 text-green-400"
+                        }`}>
+                            {message}
+                        </div>
+                    )}
+                </Card>
+            </motion.div>
+        </div>
+    );
 }
+
+export default ChangePassword;

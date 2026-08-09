@@ -1,164 +1,365 @@
-import { Link, useNavigate } from "react-router-dom";
-import "../styles/dashboard.css";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import {
+  HiOutlineFolderOpen,
+  HiOutlineMapPin,
+  HiOutlineDocumentChartBar,
+  HiOutlinePlusCircle,
+} from "react-icons/hi2";
 
-function Dashboard() {
+import { WiDaySunny } from "react-icons/wi";
+import { GiWindTurbine } from "react-icons/gi";
+
+import { useAuth } from "../Authentication/AuthContext";
+import { getProjects } from "../services/projectService";
+import { getSites } from "../services/siteService";
+import { getReports } from "../services/reportService";
+
+import DashboardLayout from "../components/layout/DashboardLayout";
+import Loader from "../components/ui/Loader";
+import ErrorState from "../components/ui/ErrorState";
+import SolarTrendChart from "../components/charts/SolarTrendChart";
+import WindTrendChart from "../components/charts/WindTrendChart";
+import EnergyBarChart from "../components/charts/EnergyBarChart";
+import ProjectsPieChart from "../components/charts/ProjectsPieChart";
+
+
+// =========================
+// Quick Actions
+// =========================
+
+const analystQuickActions = [
+  { label: "Create Project", icon: HiOutlinePlusCircle, path: "/create-project" },
+  { label: "Analyze Site", icon: HiOutlineMapPin, path: "/analysis" },
+  { label: "Generate Report", icon: HiOutlineDocumentChartBar, path: "/reports" },
+];
+
+const viewerQuickActions = [
+  { label: "View Projects", icon: HiOutlineFolderOpen, path: "/projects" },
+  { label: "View Reports", icon: HiOutlineDocumentChartBar, path: "/reports" },
+];
+
+// Format a Firestore Timestamp (or Date) into a friendly relative-ish string
+function formatTimestamp(timestamp) {
+  const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return "Recently";
+
+  const diffMs = Date.now() - date.getTime();
+  const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+
+  if (diffHrs < 1) return "Just now";
+  if (diffHrs < 24) return `${diffHrs} hour${diffHrs > 1 ? "s" : ""} ago`;
+
+  const diffDays = Math.floor(diffHrs / 24);
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  return date.toLocaleDateString();
+}
+
+export default function Dashboard() {
+  const { currentUser, userData } = useAuth();
   const navigate = useNavigate();
 
-  const email = localStorage.getItem("email");
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem("token");
-
   const [projects, setProjects] = useState([]);
-  const [sites, setSites] = useState([]);
+  const [sitesCount, setSitesCount] = useState(0);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  function logout() {
-    localStorage.clear();
-    navigate("/login");
-  }
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  // Fetch Projects
-  const fetchProjects = async () => {
+  const loadDashboardData = async () => {
     try {
-      const res = await axios.get(
-        "http://127.0.0.1:8000/projects/",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      setLoading(true);
+      setError(null);
 
-      setProjects(res.data);
+      const [projectsData, sitesData, reportsData] = await Promise.all([
+        getProjects(),
+        getSites(),
+        getReports(),
+      ]);
+
+      setProjects(projectsData);
+      setSitesCount(sitesData.length);
+      setReports(reportsData);
     } catch (err) {
-      console.log(err);
+      console.error("Error loading dashboard data:", err);
+      setError("Couldn't load your dashboard data. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Fetch Sites
-  // Fetch Sites
-const fetchSites = async () => {
-  try {
-    const res = await axios.get(
-      "http://127.0.0.1:8000/sites/",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  const displayName = userData?.name || currentUser?.displayName || "User";
+  const email = userData?.email || currentUser?.email || "";
+  const photoURL = userData?.photoURL || currentUser?.photoURL;
+  const role = userData?.role || "viewer";
+  const quickActions = role === "analyst" ? analystQuickActions : viewerQuickActions;
 
-    setSites(res.data);
-  } catch (err) {
-    console.log(err);
-  }
-};
+  const totalProjects = projects.length;
+  const solarProjects = projects.filter((p) => p.energyType === "Solar").length;
+  const windProjects = projects.filter((p) => p.energyType === "Wind").length;
 
-  useEffect(() => {
-    fetchProjects();
-    fetchSites();
-  }, []);
+  const stats = [
+    {
+      icon: HiOutlineFolderOpen,
+      label: "Total Projects",
+      value: totalProjects,
+      accent: "text-blue bg-blue/10",
+    },
+    {
+      icon: WiDaySunny,
+      label: "Solar Projects",
+      value: solarProjects,
+      accent: "text-green bg-green/10",
+    },
+    {
+      icon: GiWindTurbine,
+      label: "Wind Projects",
+      value: windProjects,
+      accent: "text-navy bg-navy/10",
+    },
+    {
+      icon: HiOutlineMapPin,
+      label: "Total Sites",
+      value: sitesCount,
+      accent: "text-blue bg-blue/10",
+    },
+  ];
+
+  const recentProjects = projects.slice(0, 4);
+
+  // Recent Activity: merge recent projects + recent reports, sorted by time
+  const recentActivity = [
+    ...projects.map((p) => ({
+      title: `New project created — ${p.projectName}`,
+      meta: `${p.region || "Unknown region"} · ${formatTimestamp(p.createdAt)}`,
+      time: p.createdAt,
+    })),
+    ...reports.map((r) => ({
+      title:
+        r.type === "site-analysis"
+          ? `Site analysis saved — ${r.siteName || "Site"}`
+          : `Report generated — ${r.projectName || "Project"}`,
+      meta: formatTimestamp(r.createdAt),
+      time: r.createdAt,
+    })),
+  ]
+    .sort((a, b) => {
+      const aTime = a.time?.toDate ? a.time.toDate().getTime() : 0;
+      const bTime = b.time?.toDate ? b.time.toDate().getTime() : 0;
+      return bTime - aTime;
+    })
+    .slice(0, 5);
 
   return (
-    <div className="dashboard">
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto w-full px-6 lg:px-10 py-8">
+        {/* Welcome Banner */}
+        <div className="relative overflow-hidden rounded-3xl bg-slate-900 px-8 py-10">
+          <div className="absolute -top-20 -right-16 h-64 w-64 rounded-full bg-green/20 blur-3xl"></div>
 
-      {/* Navbar */}
+          <div className="relative flex items-center justify-between flex-wrap gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white">
+                Welcome back, {displayName.split(" ")[0]} 👋
+              </h1>
 
-      <div className="navbar">
-        <h2>🌞 Solar & Wind Deployment Intelligence Platform</h2>
-
-        <button className="logout" onClick={logout}>
-          Logout
-        </button>
-      </div>
-
-      <div className="layout">
-
-        {/* Sidebar */}
-
-        <div className="sidebar">
-          <Link to="/dashboard">🏠 Dashboard</Link>
-
-          <Link to="/projects">📁 Projects</Link>
-
-          <Link to="/sites">📍 Sites</Link>
-
-          <Link to="/change-password">🔒 Change Password</Link>
-        </div>
-
-        {/* Main */}
-
-        <div className="main">
-
-          <h1>Welcome 👋</h1>
-
-          <p>
-            <strong>Email:</strong> {email}
-          </p>
-
-          <p>
-            <strong>Role:</strong> {role}
-          </p>
-
-          <div className="cards">
-
-            {/* Projects */}
-
-            <div className="card">
-              <h2>📁 Projects</h2>
-
-              <h1>{projects.length}</h1>
-
-              <p>Total Renewable Projects</p>
-
-              <br />
-
-              <button onClick={() => navigate("/projects")}>
-                Open Projects
-              </button>
+              <p className="mt-3 text-white/60 max-w-lg">
+                Here's what's happening across your renewable energy projects
+                today.
+              </p>
             </div>
 
-            {/* Sites */}
-
-            <div className="card">
-              <h2>📍 Sites</h2>
-
-              <h1>{sites.length}</h1>
-
-              <p>Total Renewable Sites</p>
-
-              <br />
-
-              <button onClick={() => navigate("/sites")}>
-                Open Sites
-              </button>
-            </div>
-
-            {/* Security */}
-
-            <div className="card">
-              <h2>🔒 Security</h2>
-
-              <p>Update your account password securely.</p>
-
-              <br />
-
-              <button
-                onClick={() => navigate("/change-password")}
-              >
-                Change Password
-              </button>
-            </div>
-
+            {photoURL ? (
+              <img
+                src={photoURL}
+                alt="Profile"
+                className="w-20 h-20 rounded-full object-cover border-4 border-white"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold border-4 border-white">
+                {displayName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
-
         </div>
 
-      </div>
+        {error && <ErrorState message={error} onRetry={loadDashboardData} />}
 
-    </div>
+        {loading ? (
+          <Loader label="Loading your dashboard..." />
+        ) : (
+          !error && (
+            <>
+              {/* User Profile + Statistics */}
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+                  <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-6">
+                    Your Profile
+                  </h2>
+
+                  <div className="flex items-center gap-5">
+                    {photoURL ? (
+                      <img
+                        src={photoURL}
+                        alt="Profile"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-blue-500"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 text-white flex items-center justify-center text-3xl font-bold">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900">
+                        {displayName}
+                      </h3>
+                      <p className="text-slate-500 break-all">{email}</p>
+                      <span className="inline-block mt-3 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold capitalize">
+                        {role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {stats.map((item) => (
+                    <div
+                      key={item.label}
+                      className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-3xl font-extrabold text-slate-900">
+                            {item.value}
+                          </p>
+                          <p className="mt-2 text-slate-500">{item.label}</p>
+                        </div>
+
+                        <div
+                          className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${item.accent}`}
+                        >
+                          <item.icon />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Recent Activity + Quick Actions */}
+              <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+                  <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-6">
+                    Recent Activity
+                  </h2>
+
+                  {recentActivity.length === 0 ? (
+                    <p className="text-slate-500">
+                      No activity yet — create your first project to get
+                      started.
+                    </p>
+                  ) : (
+                    <div className="space-y-5">
+                      {recentActivity.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-4 border-b border-slate-100 pb-4 last:border-none"
+                        >
+                          <div className="w-3 h-3 rounded-full bg-green-500 mt-2"></div>
+                          <div>
+                            <h4 className="font-semibold text-slate-900">
+                              {item.title}
+                            </h4>
+                            <p className="text-sm text-slate-500 mt-1">
+                              {item.meta}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6">
+                  <h2 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-6">
+                    Quick Actions
+                  </h2>
+
+                  <div className="space-y-4">
+                    {quickActions.map((action) => (
+                      <button
+                        key={action.label}
+                        onClick={() => navigate(action.path)}
+                        className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl border border-slate-200 hover:bg-blue-600 hover:text-white transition-all duration-300 hover:shadow-lg group"
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 group-hover:bg-white/20 flex items-center justify-center text-2xl transition">
+                          <action.icon />
+                        </div>
+                        <span className="font-semibold">{action.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Recent Projects */}
+                  <div className="mt-8">
+                    <h3 className="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-4">
+                      Recent Projects
+                    </h3>
+
+                    {recentProjects.length === 0 ? (
+                      <p className="text-sm text-slate-500">
+                        No projects yet.
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        {recentProjects.map((project) => (
+                          <button
+                            key={project.id}
+                            onClick={() => navigate(`/projects/${project.id}`)}
+                            className="w-full text-left px-4 py-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition"
+                          >
+                            <p className="font-semibold text-slate-900 truncate">
+                              {project.projectName}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {project.energyType} · {project.region}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </>
+          )
+        )}
+        
+         {/* Analytics Charts */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+          <SolarTrendChart />
+          <WindTrendChart />
+          <EnergyBarChart />
+          <ProjectsPieChart />
+        </div>
+
+        {/* Footer */}
+        <div className="mt-10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500 border-t border-slate-200 pt-6">
+          <p>
+            © 2026{" "}
+            <span className="font-semibold">
+              Solar & Wind Deployment Intelligence Platform
+            </span>
+          </p>
+          <p>Powered by AI • GIS • Environmental Intelligence</p>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
-
-export default Dashboard;

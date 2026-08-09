@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar & Wind Deployment Intelligence Platform</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f6f9; color: #333; display: flex; height: 100vh; }
+        
+        
+        .sidebar { width: 260px; background-color: #1e293b; color: white; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .sidebar h2 { font-size: 18px; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .nav-btn { background: none; border: none; color: #cbd5e1; padding: 12px; text-align: left; font-size: 15px; cursor: pointer; border-radius: 6px; transition: 0.2s; }
+        .nav-btn:hover, .nav-btn.active { background-color: #334155; color: white; font-weight: 600; }
+        
+       
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        header { background-color: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        header h1 { font-size: 22px; color: #0f172a; }
+        .user-badge { background-color: #e2e8f0; padding: 6px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        
+        .dashboard-view { padding: 40px; overflow-y: auto; flex: 1; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 25px; }
+        .card h3 { margin-bottom: 15px; color: #1e293b; }
+        
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: 600; }
+        tr:hover { background-color: #f8fafc; }
+        .status-pill { background-color: #dcfce7; color: #15803d; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Intelligence Platform</h2>
+        <button class="nav-btn active">📊 System Dashboard</button>
+        <button class="nav-btn">🗺️ Regional Map Tracker</button>
+        <button class="nav-btn">🔐 Account Security</button>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Solar & Wind Deployment Intelligence Platform</h1>
+            <div id="user-display" class="user-badge">Guest Session (Read-Only)</div>
+        </header>
+
+        <div class="dashboard-view">
+            <div class="card">
+                <h3>Backend Operational Status</h3>
+                <p id="backend-status" style="color: #64748b;">Connecting to backend services...</p>
+            </div>
+
+            <div class="card">
+                <h3>Active Regional Plant Projects</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Project ID</th>
+                            <th>Name</th>
+                            <th>Region</th>
+                            <th>Plant Type</th>
+                            <th>Land Area (Acres)</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #94a3b8; padding: 30px;">
+                                Loading project site infrastructure data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        async function loadDashboardData() {
+            try {
+                
+                const rootResponse = await fetch('http://127.0.0.1:8000/');
+                const rootData = await rootResponse.json();
+                if(rootData.status) {
+                    document.getElementById('backend-status').innerHTML = 
+                        `🟢 <strong>${rootData.status}</strong> (Milestone Core Layer: ${rootData.milestone})`;
+                }
+
+                
+                const tableBody = document.getElementById('projects-table-body');
+                
+                
+                const standardProjects = [
+                    { id: "PROJ-NORTH-SOLAR-01", name: "Sahara Desert Solar Arrays", region: "North Region", type: "Solar", area: "1,200.5" },
+                    { id: "PROJ-WEST-WIND-04", name: "Thar Desert Wind Farm", region: "West Region", type: "Wind", area: "840.2" }
+                ];
+
+                tableBody.innerHTML = ''; 
+                standardProjects.forEach(proj => {
+                    tableBody.innerHTML += `
+                        <tr>
+                            <td><strong>${proj.id}</strong></td>
+                            <td>${proj.name}</td>
+                            <td>${proj.region}</td>
+                            <td>${proj.type}</td>
+                            <td>${proj.area}</td>
+                            <td><span class="status-pill">Active Site</span></td>
+                        </tr>
+                    `;
+                });
+
+            } catch (error) {
+                document.getElementById('backend-status').innerHTML = "🔴 Connection to FastAPI application context lost.";
+                console.error("Dashboard synchronization error:", error);
+            }
+        }
+
+       
+        window.onload = loadDashboardData;
+    </script>
+</body>
+</html>

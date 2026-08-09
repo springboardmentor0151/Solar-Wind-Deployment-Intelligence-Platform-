@@ -1,0 +1,18 @@
+{
+    "PROJ-1": {
+        "id": "PROJ-1",
+        "name": "P1",
+        "region": "Jalna, Jalna District, Maharashtra, India",
+        "description": "test",
+        "latitude": 19.831188,
+        "longitude": 76.0613898
+    },
+    "PROJ-2": {
+        "id": "PROJ-2",
+        "name": "P2",
+        "region": "Chhatrapati Sambhajinagar, Chhatrapati Sambhajinagar District, Maharashtra, 431002, India",
+        "description": "test 2",
+        "latitude": 19.877263,
+        "longitude": 75.3390241
+    }
+}

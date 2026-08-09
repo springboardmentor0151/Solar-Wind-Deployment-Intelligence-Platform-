@@ -1,4 +1,7 @@
-__pycache__/
-*.pyc
-.env
-node_modules/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/dist/
+**/.env
+**/*.db
+backend/app/ml/models/*.joblib

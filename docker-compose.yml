@@ -1,32 +1,29 @@
 version: "3.9"
 
 services:
-  db:
-    image: postgis/postgis:15-3.4
-    container_name: solarwind-db
-    environment:
-      POSTGRES_DB: solarwinddb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-
   backend:
     build: ./backend
-    container_name: solarwind-backend
+    container_name: renewsite-backend
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+    volumes:
+      - renewsite-data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:////app/data/renewsite.db
+      - SECRET_KEY=${SECRET_KEY:-change_this_to_a_long_random_string_in_production}
+    restart: unless-stopped
 
   frontend:
-    image: node:20
-    container_name: solarwind-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api/v1
+    container_name: renewsite-frontend
     ports:
-      - "5173:5173"
+      - "5173:80"
     depends_on:
       - backend
+    restart: unless-stopped
+
+volumes:
+  renewsite-data:

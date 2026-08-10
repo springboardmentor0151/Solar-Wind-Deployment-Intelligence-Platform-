@@ -1,32 +1,15 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  db:
-    image: postgis/postgis:15-3.4
-    container_name: solarwind-db
-    environment:
-      POSTGRES_DB: solarwinddb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+  web:
+    build: .
     ports:
-      - "5432:5432"
-
-  backend:
-    build: ./backend
-    container_name: solarwind-backend
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
-  frontend:
-    image: node:20
-    container_name: solarwind-frontend
-    working_dir: /app
+      - "5000:5000"
     volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
+      - renewable_data:/app/instance
+    environment:
+      - SECRET_KEY=prod-secret-key-change-me
+    restart: always
+
+volumes:
+  renewable_data:

@@ -1,0 +1,77 @@
+{
+  "domain": "wind",
+  "schema_version": "1.0",
+  "model_type": "RandomForestRegressor",
+  "model_version": "1.0.0",
+  "features": [
+    "latitude",
+    "longitude",
+    "wind_speed_m_s",
+    "air_density_kg_m3",
+    "temperature_c",
+    "humidity_pct",
+    "pressure_hpa",
+    "elevation_m"
+  ],
+  "feature_count": 8,
+  "target": "wind_generation_mw",
+  "target_unit": "MW",
+  "data_source": "observed",
+  "dataset_type": "observed",
+  "dataset": "wind_observed_dataset.csv",
+  "training_rows": 800,
+  "testing_rows": 200,
+  "total_rows": 1000,
+  "test_size": 0.2,
+  "random_state": 42,
+  "metrics": {
+    "mae": 0.0076762159351171835,
+    "rmse": 0.009876538926629578,
+    "r2": 0.8842286815738771,
+    "mape_percent": 12.31273406469155
+  },
+  "trained_at": "2026-08-15T03:08:28.555297+00:00",
+  "preprocessing": {
+    "feature_names": [
+      "latitude",
+      "longitude",
+      "wind_speed_m_s",
+      "air_density_kg_m3",
+      "temperature_c",
+      "humidity_pct",
+      "pressure_hpa",
+      "elevation_m"
+    ],
+    "use_scaler": true,
+    "imputer_medians": {
+      "latitude": 23.699891430061346,
+      "longitude": 82.67774564100885,
+      "wind_speed_m_s": 4.631978957559147,
+      "air_density_kg_m3": 1.1111440603558118,
+      "temperature_c": 24.615427290859543,
+      "humidity_pct": 70.36515384774924,
+      "pressure_hpa": 952.2892775728114,
+      "elevation_m": 523.4469902053874
+    },
+    "scaler_means": {
+      "latitude": 22.861373933099816,
+      "longitude": 82.44622020795526,
+      "wind_speed_m_s": 4.905811786587749,
+      "air_density_kg_m3": 1.101532033978151,
+      "temperature_c": 24.55706642544072,
+      "humidity_pct": 70.71918875119479,
+      "pressure_hpa": 941.4962258517256,
+      "elevation_m": 630.5625714568591
+    },
+    "scaler_stds": {
+      "latitude": 8.398280783107024,
+      "longitude": 8.7660523352879,
+      "wind_speed_m_s": 2.4360669182328434,
+      "air_density_kg_m3": 0.049166924073681104,
+      "temperature_c": 5.000864359436793,
+      "humidity_pct": 10.62228269020759,
+      "pressure_hpa": 47.55351193426344,
+      "elevation_m": 438.2930593501059
+    }
+  }
+}

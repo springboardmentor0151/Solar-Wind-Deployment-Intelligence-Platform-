@@ -1,0 +1,1 @@
+"""Shared ML training utilities and contracts."""

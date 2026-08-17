@@ -1,0 +1,1 @@
+from app.prediction.services.prediction_service import *

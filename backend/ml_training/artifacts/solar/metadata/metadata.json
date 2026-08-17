@@ -1,0 +1,92 @@
+{
+  "domain": "solar",
+  "schema_version": "1.1",
+  "model_type": "RandomForestRegressor",
+  "model_version": "1.0.0",
+  "features": [
+    "latitude",
+    "longitude",
+    "ghi",
+    "dni",
+    "dhi",
+    "temperature_c",
+    "humidity_pct",
+    "cloud_cover_pct",
+    "pressure_hpa",
+    "wind_speed_m_s",
+    "elevation_m"
+  ],
+  "feature_count": 11,
+  "target": "solar_generation_mw",
+  "target_unit": "MW",
+  "data_source": "observed",
+  "dataset_type": "observed",
+  "dataset": "solar_observed_dataset.csv",
+  "training_rows": 800,
+  "testing_rows": 200,
+  "total_rows": 1000,
+  "test_size": 0.2,
+  "random_state": 42,
+  "metrics": {
+    "mae": 0.006456417255263835,
+    "rmse": 0.008185002353351083,
+    "r2": 0.6602872592906692,
+    "mape_percent": 6.511886086865052
+  },
+  "trained_at": "2026-08-15T03:08:22.710980+00:00",
+  "preprocessing": {
+    "feature_names": [
+      "latitude",
+      "longitude",
+      "ghi",
+      "dni",
+      "dhi",
+      "temperature_c",
+      "humidity_pct",
+      "cloud_cover_pct",
+      "pressure_hpa",
+      "wind_speed_m_s",
+      "elevation_m"
+    ],
+    "use_scaler": true,
+    "imputer_medians": {
+      "latitude": 22.205643459177523,
+      "longitude": 82.96711864439354,
+      "ghi": 215.7908710115505,
+      "dni": 176.66876059813046,
+      "dhi": 57.24456412487794,
+      "temperature_c": 25.413359118904474,
+      "humidity_pct": 71.14403502952507,
+      "cloud_cover_pct": 21.881585333293756,
+      "pressure_hpa": 960.987056123651,
+      "wind_speed_m_s": 4.695140615566052,
+      "elevation_m": 443.07073871023334
+    },
+    "scaler_means": {
+      "latitude": 22.208517603932638,
+      "longitude": 83.05578661193594,
+      "ghi": 214.66970547286945,
+      "dni": 180.62212998696464,
+      "dhi": 58.97829266520804,
+      "temperature_c": 25.283059149302613,
+      "humidity_pct": 71.17674728192253,
+      "cloud_cover_pct": 23.187820727116783,
+      "pressure_hpa": 953.7639420025802,
+      "wind_speed_m_s": 4.743229366786726,
+      "elevation_m": 518.4921158054337
+    },
+    "scaler_stds": {
+      "latitude": 8.41302085329183,
+      "longitude": 8.527665129738217,
+      "ghi": 48.75565266622476,
+      "dni": 49.48428416499956,
+      "dhi": 20.220911221110708,
+      "temperature_c": 4.549861329150068,
+      "humidity_pct": 10.874147861107353,
+      "cloud_cover_pct": 15.322231779813695,
+      "pressure_hpa": 41.00447364581324,
+      "wind_speed_m_s": 1.7660833960725715,
+      "elevation_m": 373.2872125107305
+    }
+  }
+}

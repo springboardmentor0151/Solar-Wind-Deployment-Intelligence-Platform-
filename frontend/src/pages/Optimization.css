@@ -1,0 +1,324 @@
+.optimization-page {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.optimization-header {
+  margin-bottom: 25px;
+}
+
+.optimization-header h1 {
+  margin: 0;
+  font-size: 32px;
+  color: #111827;
+}
+
+.optimization-header p {
+  margin-top: 8px;
+  color: #6b7280;
+}
+
+/* ========================================
+   BEST SITE
+======================================== */
+
+.best-site-card {
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  color: white;
+  padding: 28px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.best-site-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.best-site-card h2 {
+  margin: 5px 0;
+  font-size: 27px;
+}
+
+.best-site-card p {
+  opacity: 0.85;
+}
+
+.best-site-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.best-site-grid div {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.best-site-grid span {
+  display: block;
+  font-size: 13px;
+  opacity: 0.8;
+  margin-bottom: 7px;
+}
+
+.best-site-grid strong {
+  font-size: 20px;
+}
+
+/* ========================================
+   DEPLOYMENT RECOMMENDATION
+   ONLY COLOR CHANGED
+======================================== */
+
+.best-site-card > div:last-child {
+  background: #166534 !important;
+  color: #ffffff !important;
+}
+
+.best-site-card > div:last-child * {
+  color: #ffffff !important;
+}
+
+/* ========================================
+   SUMMARY
+======================================== */
+
+.optimization-summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(180px, 1fr));
+
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.summary-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.summary-card span {
+  display: block;
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.summary-card strong {
+  font-size: 28px;
+}
+
+/* ========================================
+   RANKING
+======================================== */
+
+.ranking-section {
+  background: white;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 22px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title h2 {
+  margin: 0;
+}
+
+.section-title span {
+  color: #6b7280;
+}
+
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ranking-card {
+  display: grid;
+
+  grid-template-columns:
+    70px
+    1fr
+    130px
+    100px
+    100px
+    180px;
+
+  align-items: center;
+  gap: 15px;
+  padding: 18px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.ranking-card.first {
+  border: 2px solid #2563eb;
+  background: #eff6ff;
+}
+
+/* ========================================
+   RANK
+======================================== */
+
+.rank-number {
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ========================================
+   SITE INFO
+======================================== */
+
+.ranking-info h3 {
+  margin: 0 0 5px 0;
+  font-size: 17px;
+}
+
+.ranking-info p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ========================================
+   SCORES
+======================================== */
+
+.ranking-score span {
+  display: block;
+  color: #6b7280;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.ranking-score strong {
+  font-size: 19px;
+}
+
+/* ========================================
+   TECHNOLOGY
+======================================== */
+
+.technology {
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: #f3f4f6;
+  text-align: center;
+}
+
+/* ========================================
+   BUTTON
+======================================== */
+
+.optimization-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 25px;
+}
+
+.optimization-button {
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.optimization-button:hover {
+  opacity: 0.9;
+}
+
+/* ========================================
+   LOADING
+======================================== */
+
+.optimization-loading {
+  text-align: center;
+  padding: 80px;
+  font-size: 20px;
+}
+
+/* ========================================
+   ERROR
+======================================== */
+
+.optimization-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+/* ========================================
+   EMPTY
+======================================== */
+
+.optimization-empty {
+  background: white;
+  padding: 50px;
+  border-radius: 14px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 900px) {
+  .ranking-card {
+    grid-template-columns:
+      50px
+      1fr;
+  }
+
+  .ranking-score,
+  .technology {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .optimization-page {
+    padding: 15px;
+  }
+
+  .optimization-header h1 {
+    font-size: 25px;
+  }
+}

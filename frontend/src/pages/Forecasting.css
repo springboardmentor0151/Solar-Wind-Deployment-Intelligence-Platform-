@@ -1,0 +1,159 @@
+
+.forecasting-page {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.forecasting-header {
+  margin-bottom: 25px;
+}
+
+.forecasting-header h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  color: #111827;
+}
+
+.forecasting-header p {
+  color: #64748b;
+}
+
+.forecast-control,
+.forecast-site,
+.monthly-section,
+.forecast-recommendation {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 20px;
+}
+
+.forecast-control {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.forecast-control select,
+.forecast-control button {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.forecast-control select {
+  min-width: 260px;
+  flex: 1;
+}
+
+.forecast-control button {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.forecast-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.forecast-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.forecast-card span {
+  display: block;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.forecast-card strong {
+  font-size: 28px;
+  color: #111827;
+}
+
+.forecast-card small {
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.monthly-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.month-row {
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.month-name {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.month-data {
+  display: grid;
+  gap: 10px;
+}
+
+.metric {
+  display: grid;
+  grid-template-columns: 110px 1fr 55px;
+  gap: 10px;
+  align-items: center;
+}
+
+.metric span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.bar-container {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.solar-bar,
+.wind-bar,
+.renewable-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: #2563eb;
+}
+
+.forecast-error {
+  padding: 15px;
+  border-radius: 10px;
+  background: #fee2e2;
+  color: #991b1b;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 600px) {
+  .forecasting-page {
+    padding: 15px;
+  }
+
+  .forecasting-header h1 {
+    font-size: 25px;
+  }
+
+  .metric {
+    grid-template-columns: 85px 1fr 45px;
+  }
+}

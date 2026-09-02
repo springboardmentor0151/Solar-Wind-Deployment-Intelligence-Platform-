@@ -1,43 +1,98 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import LandingPage from "./pages/LandingPage";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import Signup from "./pages/Signup";
+import Register from "./pages/Register";
+
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Sites from "./pages/Sites";
-import ChangePassword from "./pages/ChangePassword";
+import Optimization from "./pages/Optimization";
+import Investment from "./pages/Investment";
+import Reports from "./pages/Reports";
+
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        <Route path="/" element={<LandingPage />} />
+        {/* ============================= */}
+        {/* PUBLIC ROUTES */}
+        {/* ============================= */}
+
+        <Route path="/" element={<Landing />} />
 
         <Route path="/login" element={<Login />} />
 
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/change-password"
-          element={<ChangePassword />}
-        />
+
+        {/* ============================= */}
+        {/* PROTECTED ROUTES */}
+        {/* ============================= */}
 
         <Route
           path="/dashboard"
-          element={<Dashboard />}
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/projects"
-          element={<Projects />}
+          element={
+            <ProtectedRoute>
+              <Projects />
+            </ProtectedRoute>
+          }
         />
 
         <Route
           path="/sites"
-          element={<Sites />}
+          element={
+            <ProtectedRoute>
+              <Sites />
+            </ProtectedRoute>
+          }
         />
+
+        <Route
+          path="/optimization"
+          element={
+            <ProtectedRoute>
+              <Optimization />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/investment"
+          element={
+            <ProtectedRoute>
+              <Investment />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* ============================= */}
+        {/* FALLBACK */}
+        {/* ============================= */}
+
+        <Route path="*" element={<Landing />} />
 
       </Routes>
     </BrowserRouter>

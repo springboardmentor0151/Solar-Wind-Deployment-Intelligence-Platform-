@@ -1,32 +1,70 @@
-version: "3.9"
-
 services:
   db:
-    image: postgis/postgis:15-3.4
+    image: postgres:16-alpine
     container_name: solarwind-db
+    restart: unless-stopped
+
     environment:
-      POSTGRES_DB: solarwinddb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${POSTGRES_DB:-solarwinddb}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-solarwinddb}"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+
     container_name: solarwind-backend
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-solarwinddb}
+
+      FRONTEND_ORIGINS: http://localhost:5173,http://localhost:8080
+
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-this-jwt-secret}
+
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+
 
   frontend:
-    image: node:20
+    build:
+      context: ./frontend
+
+      args:
+        VITE_API_URL: http://localhost:8000
+
     container_name: solarwind-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
+    restart: unless-stopped
+
     depends_on:
       - backend
+
+    ports:
+      - "8080:80"
+
+
+volumes:
+  postgres_data:

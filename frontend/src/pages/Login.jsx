@@ -1,69 +1,103 @@
 import { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "../styles/login.css";
+import { useNavigate, Link } from "react-router-dom";
+import API from "../services/api";
+import "../styles/Login.css";
 
 function Login() {
+
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email,setEmail]=useState("");
+  const [password,setPassword]=useState("");
 
-  const loginUser = async (e) => {
+  const loginUser=async(e)=>{
+
     e.preventDefault();
 
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login",
-        {
-          email,
-          password,
-        }
+    try{
+
+      const response=await API.post("/users/login",{
+
+        email,
+        password,
+
+      });
+
+      localStorage.setItem(
+        "token",
+        response.data.access_token
       );
 
-      // Save token
-      localStorage.setItem("token", response.data.access_token);
-      localStorage.setItem("role", response.data.role);
-      localStorage.setItem("email", response.data.email);
-
-      alert("Login Successful");
-
-      // Redirect
       navigate("/dashboard");
 
-    } catch (error) {
-      alert(error.response?.data?.detail || "Login Failed");
-      console.log(error);
     }
+
+    catch{
+
+      alert("Invalid Email or Password");
+
+    }
+
   };
 
-  return (
-    <div className="login-container">
-      <form className="login-card" onSubmit={loginUser}>
-        <h2>Login</h2>
+  return(
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+<div className="login-page">
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+<div className="login-card">
 
-        <button type="submit">
-          Login
-        </button>
-      </form>
-    </div>
+<h1>⚡ Welcome Back</h1>
+
+<p className="subtitle">
+
+Login to continue Renewable Energy Analysis
+
+</p>
+
+<form onSubmit={loginUser}>
+
+<input
+type="email"
+placeholder="Enter Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+/>
+
+<input
+type="password"
+placeholder="Enter Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+/>
+
+<button type="submit">
+
+Login
+
+</button>
+
+</form>
+
+<div className="register-link">
+
+Don't have an account?
+
+<br/>
+
+<Link to="/register">
+
+Create Account
+
+</Link>
+
+</div>
+
+</div>
+
+</div>
+
   );
+
 }
 
 export default Login;

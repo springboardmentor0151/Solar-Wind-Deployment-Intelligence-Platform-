@@ -1,45 +1,101 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
+from app.database.database import Base, engine
 
-from .routers import (
-    auth_routes,
-    projects_routes,
-    sites_routes,
-    predict,
-    location_info,
+# Models
+from app.models.user import User
+from app.models.project import Project
+from app.models.site import Site
+
+# Routers
+from app.routers.location import router as location_router
+from app.routers.user import router as user_router
+from app.routers.project import router as project_router
+from app.routers.site import router as site_router
+from app.routers.analysis import router as analysis_router
+from app.routers.investment import router as investment_router
+
+from app.routers.forecast import router as forecast_router
+
+# ========================================
+# CREATE FASTAPI APPLICATION
+# ========================================
+
+app = FastAPI(
+    title="Solar & Wind Deployment Intelligence Platform",
+    description="Renewable energy site intelligence and optimization platform",
+    version="1.0.0",
 )
 
-# Create database tables
+
+# ========================================
+# DATABASE
+# ========================================
+
 Base.metadata.create_all(bind=engine)
 
-# Create FastAPI app
-app = FastAPI(
-    title="Solar & Wind Deployment Intelligence Platform"
-)
 
-# Enable CORS
+# ========================================
+# CORS
+# ========================================
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+
+    "http://localhost:5176",
+    "http://127.0.0.1:5176",
+]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-    ],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Register routers
-app.include_router(auth_routes.router)
-app.include_router(projects_routes.router)
-app.include_router(sites_routes.router)
-app.include_router(predict.router)
-app.include_router(location_info.router)
 
-# Health Check
+# ========================================
+# ROUTERS
+# ========================================
+
+app.include_router(location_router)
+app.include_router(user_router)
+app.include_router(project_router)
+app.include_router(site_router)
+app.include_router(analysis_router)
+app.include_router(investment_router)
+app.include_router(forecast_router)
+
+
+# ========================================
+# HOME
+# ========================================
+
 @app.get("/")
-def health():
+def home():
     return {
-        "message": "Solar & Wind Deployment Intelligence Platform API running"
+        "message": "Welcome to Solar & Wind Deployment Intelligence Platform",
+        "status": "running",
+    }
+
+
+# ========================================
+# HEALTH CHECK
+# ========================================
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": "SolarWindPlatform",
     }

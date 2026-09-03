@@ -1,69 +1,34 @@
 import { useState } from "react";
-import axios from "axios";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import "../styles/login.css";
 
-function Login() {
+import AuthCard from "../components/AuthCard.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+
+export default function Login() {
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const { register, handleSubmit, formState } = useForm();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const loginUser = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (values) => {
+    setError("");
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/auth/login",
-        {
-          email,
-          password,
-        }
-      );
-
-      // Save token
-      localStorage.setItem("token", response.data.access_token);
-      localStorage.setItem("role", response.data.role);
-      localStorage.setItem("email", response.data.email);
-
-      alert("Login Successful");
-
-      // Redirect
-      navigate("/dashboard");
-
-    } catch (error) {
-      alert(error.response?.data?.detail || "Login Failed");
-      console.log(error);
+      await login(values);
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Unable to sign in.");
     }
   };
 
   return (
-    <div className="login-container">
-      <form className="login-card" onSubmit={loginUser}>
-        <h2>Login</h2>
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-
-        <button type="submit">
-          Login
-        </button>
+    <AuthCard title="Login" subtitle="Access project planning, GIS workflows, and deployment intelligence." footerText="New to the platform?" footerLink="/register" footerLabel="Create account">
+      <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+        <label className="block"><span className="text-sm font-medium text-slate-700 dark:text-slate-200">Email</span><input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-ocean-500 dark:border-slate-700 dark:bg-slate-950" type="email" {...register("email", { required: true })} /></label>
+        <label className="block"><span className="text-sm font-medium text-slate-700 dark:text-slate-200">Password</span><input className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-3 outline-none focus:border-ocean-500 dark:border-slate-700 dark:bg-slate-950" type="password" {...register("password", { required: true })} /></label>
+        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        <button className="w-full rounded-lg bg-canopy-600 px-4 py-3 font-semibold text-white transition hover:bg-canopy-700 disabled:opacity-60" disabled={formState.isSubmitting}>{formState.isSubmitting ? "Signing in..." : "Login"}</button>
       </form>
-    </div>
+    </AuthCard>
   );
 }
-
-export default Login;

@@ -1,32 +1,61 @@
-version: "3.9"
-
 services:
-  db:
-    image: postgis/postgis:15-3.4
-    container_name: solarwind-db
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: renewables-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: solarwinddb
+      POSTGRES_DB: renewables_platform
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d renewables_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./backend
-    container_name: solarwind-backend
+    build:
+      context: ./backend
+    container_name: renewables-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      APP_NAME: Solar & Wind Deployment Intelligence Platform
+      API_PREFIX: /api
+      ENVIRONMENT: production
+      DEBUG: "false"
+      SECRET_KEY: replace-with-a-long-random-secret
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/renewables_platform
+      CORS_ORIGINS: http://localhost:5173,http://localhost:8080
+      MONGODB_URL: mongodb://mongo:27017
+      MONGODB_DATABASE: renewables
     ports:
       - "8000:8000"
-    depends_on:
-      - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
-    image: node:20
-    container_name: solarwind-frontend
-    working_dir: /app
-    volumes:
-      - ./frontend:/app
-    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8000/api
+    container_name: renewables-frontend
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+
+volumes:
+  postgres_data:
